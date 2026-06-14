@@ -1,6 +1,5 @@
 package com.authcore.authapp.services.user;
 
-import com.authcore.authapp.models.AppUser;
 import com.authcore.authapp.repository.AppUserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return appUserRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("user not found"));
+        return appUserRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
     }
 }

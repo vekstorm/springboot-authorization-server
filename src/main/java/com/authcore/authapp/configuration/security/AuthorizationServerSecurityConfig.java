@@ -73,6 +73,7 @@ public class AuthorizationServerSecurityConfig {
                                 .authorizeHttpRequests(authorize -> authorize
                                                 .requestMatchers(
                                                                 "/login",
+                                                                "/register",
                                                                 "/error",
                                                                 "/main.css",
                                                                 "/assets/**",
