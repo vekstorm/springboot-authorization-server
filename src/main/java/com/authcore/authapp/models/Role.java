@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
@@ -22,8 +23,8 @@ import java.util.Set;
 public class Role implements GrantedAuthority {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false, unique = true, length = 50)
     private String name;
@@ -32,11 +33,7 @@ public class Role implements GrantedAuthority {
     private String description;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "role_permissions",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id")
-    )
+    @JoinTable(name = "role_permissions", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     @Builder.Default
     private Set<Permission> permissions = new HashSet<>();
 

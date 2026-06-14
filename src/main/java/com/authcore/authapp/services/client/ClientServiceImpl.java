@@ -2,11 +2,15 @@ package com.authcore.authapp.services.client;
 
 import com.authcore.authapp.dto.AppResponseDto;
 import com.authcore.authapp.dto.client.ClientCreateDto;
+import com.authcore.authapp.dto.client.ClientResponseDto;
 import com.authcore.authapp.dto.client.mapper.ClientMapper;
 import com.authcore.authapp.models.Client;
 import com.authcore.authapp.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -14,6 +18,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -22,6 +27,7 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
 
     private final ClientRepository clientRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ClientMapper clientMapper;
 
     private Client clientFromDto(ClientCreateDto clientDto) {
         return Client.builder()
@@ -29,8 +35,10 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
                 .clientSecret(passwordEncoder.encode(clientDto.getClientSecret()))
                 .clientName(clientDto.getClientName())
                 .clientIdIssuedAt(Instant.now())
-                .authorizationGrantTypes(ClientMapper.getAuthorizationGrantTypesFromNamesList(clientDto.getAuthorizationGrantTypes()))
-                .authenticationMethods(ClientMapper.getClientAuthenticationMethodsFromNamesList(clientDto.getAuthenticationMethods()))
+                .authorizationGrantTypes(
+                        ClientMapper.getAuthorizationGrantTypesFromNamesList(clientDto.getAuthorizationGrantTypes()))
+                .authenticationMethods(
+                        ClientMapper.getClientAuthenticationMethodsFromNamesList(clientDto.getAuthenticationMethods()))
                 .redirectUris(clientDto.getRedirectUris())
                 .postLogoutRedirectUris(clientDto.getPostLogoutRedirectUris())
                 .scopes(clientDto.getScopes())
@@ -60,7 +68,7 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
     public RegisteredClient findById(String id) {
         log.debug("Finding client by id: {}", id);
         try {
-            Client client = clientRepository.findById(Long.valueOf(id))
+            Client client = clientRepository.findById(UUID.fromString(id))
                     .orElseThrow(() -> new RuntimeException("Client not found with id: " + id));
             return Client.toRegisteredClient(client);
         } catch (NumberFormatException e) {
@@ -76,4 +84,16 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
                 .orElseThrow(() -> new RuntimeException("Client not found with clientId: " + clientId));
         return Client.toRegisteredClient(client);
     }
+
+    @Override
+    public Page<ClientResponseDto> getClients(String clientName, Pageable pageable) {
+        if (clientName == null || clientName.isEmpty()) {
+            log.debug("Finding clients by clientName: {} - Page {}: Size {}", clientName, pageable.getPageNumber(),
+                    pageable.getPageSize());
+            return clientMapper.toClientResponseDtoPage(clientRepository.findAll(pageable));
+        }
+        return clientMapper
+                .toClientResponseDtoPage(clientRepository.findByClientNameContainingIgnoreCase(clientName, pageable));
+    }
+
 }

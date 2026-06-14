@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "permissions")
@@ -21,8 +22,8 @@ import java.util.Objects;
 public class Permission implements GrantedAuthority {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false, unique = true, length = 100)
     private String name;
@@ -47,8 +48,10 @@ public class Permission implements GrantedAuthority {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Permission)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Permission))
+            return false;
         Permission that = (Permission) o;
         return name != null && name.equals(that.name);
     }

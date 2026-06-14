@@ -1,241 +1,416 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Authorization Server - Home</title>
     <link rel="stylesheet" href="/assets/css/home.css" th:href="@{/assets/css/home.css}" />
+    <style>
+        .clients-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .clients-table thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .clients-table th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #fff;
+            /* text-transform: uppercase; */
+            letter-spacing: 0.5px;
+            font-size: 0.8rem;
+        }
+
+        .clients-table td {
+            padding: 12px 16px;
+            color: #e0e0e0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            transition: background 0.2s ease;
+        }
+
+        .clients-table tbody tr:hover td {
+            background: rgba(102, 126, 234, 0.12);
+        }
+
+        .clients-table tbody tr:nth-child(even) td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .clients-table tbody tr:nth-child(even):hover td {
+            background: rgba(102, 126, 234, 0.12);
+        }
+
+        .clients-table button {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            color: #fff;
+            background: #667eea;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .auth-method {
+            display: inline-block;
+            padding: 2px 8px;
+            margin: 2px 4px 2px 0;
+            font-size: 0.75rem;
+            color: #fff;
+            background: #764ba2;
+            border-radius: 4px;
+        }
+
+        .auth-grant-type {
+            display: inline-block;
+            padding: 2px 8px;
+            margin: 2px 4px 2px 0;
+            font-size: 0.75rem;
+            color: #fff;
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .clients-table td a {
+            color: #93b0ff;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .clients-table td a:visited {
+            color: #b794f4;
+        }
+
+        .clients-table td a:hover {
+            color: #c0d0ff;
+            border-bottom-color: #93b0ff;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            outline: none;
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 1rem 0 2rem;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            color: #b0b0b0;
+            font-size: 0.85rem;
+            padding: 0 12px;
+        }
+    </style>
 </head>
+
 <body>
-<!-- Fondo animado -->
-<div class="background-gradient"></div>
-<div class="background-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
-</div>
-
-<!-- Contenido principal -->
-<div class="home-container">
-    <!-- Header -->
-    <header class="home-header">
-        <div class="logo-section">
-            <div class="logo-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-            </div>
-            <div class="logo-text">
-                <h1>OAuth2 Server</h1>
-                <p>Secure Authorization Platform</p>
-            </div>
-        </div>
-
-        <div class="user-info" th:if="${username}">
-            <div class="user-avatar">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-            </div>
-            <div class="user-details">
-                <span class="username" th:text="${username}">admin</span>
-                <span class="user-role" th:text="${authorities}">ROLE_ADMIN</span>
-            </div>
-        </div>
-    </header>
-
-    <!-- Status Card -->
-    <div class="status-card" th:if="${username}">
-        <div class="status-icon success">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-        </div>
-        <div class="status-content">
-            <h3>Authentication Successful</h3>
-            <p>You are securely authenticated and ready to proceed</p>
-        </div>
+    <!-- Fondo animado -->
+    <div class="background-gradient"></div>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="content-grid">
-        <!-- OAuth2 Endpoints Card -->
-        <div class="info-card">
-            <div class="card-header">
-                <div class="card-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    <!-- Contenido principal -->
+    <div class="home-container">
+        <!-- Header -->
+        <header class="home-header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
                 </div>
-                <h2>OAuth2 Endpoints</h2>
-            </div>
-            <div class="card-body">
-                <div class="endpoint-list">
-                    <div class="endpoint-item">
-                        <span class="endpoint-label">Authorization</span>
-                        <code class="endpoint-url">/oauth2/authorize</code>
-                    </div>
-                    <div class="endpoint-item">
-                        <span class="endpoint-label">Token</span>
-                        <code class="endpoint-url">/oauth2/token</code>
-                    </div>
-                    <div class="endpoint-item">
-                        <span class="endpoint-label">Introspect</span>
-                        <code class="endpoint-url">/oauth2/introspect</code>
-                    </div>
-                    <div class="endpoint-item">
-                        <span class="endpoint-label">Revoke</span>
-                        <code class="endpoint-url">/oauth2/revoke</code>
-                    </div>
-                    <div class="endpoint-item">
-                        <span class="endpoint-label">JWK Set</span>
-                        <code class="endpoint-url">/oauth2/jwks</code>
-                    </div>
+                <div class="logo-text">
+                    <h1>Vekstorm OAuth2 Server</h1>
+                    <p>Secure Authorization Platform</p>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- OIDC Discovery Card -->
-        <div class="info-card">
-            <div class="card-header">
-                <div class="card-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                    </svg>
-                </div>
-                <h2>OpenID Connect</h2>
-            </div>
-            <div class="card-body">
-                <div class="endpoint-list">
-                    <div class="endpoint-item">
-                        <span class="endpoint-label">Configuration</span>
-                        <code class="endpoint-url">/.well-known/openid-configuration</code>
-                    </div>
-                    <div class="endpoint-item">
-                        <span class="endpoint-label">UserInfo</span>
-                        <code class="endpoint-url">/userinfo</code>
-                    </div>
-                    <div class="endpoint-item">
-                        <span class="endpoint-label">OAuth2 Metadata</span>
-                        <code class="endpoint-url">/.well-known/oauth-authorization-server</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Features Card -->
-        <div class="info-card full-width">
-            <div class="card-header">
-                <div class="card-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                    </svg>
-                </div>
-                <h2>Platform Features</h2>
-            </div>
-            <div class="card-body">
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <div class="feature-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            </svg>
-                        </div>
-                        <h4>Secure Authentication</h4>
-                        <p>Industry-standard OAuth2 and OpenID Connect protocols</p>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                        </div>
-                        <h4>Token Management</h4>
-                        <p>JWT-based access tokens with automatic rotation</p>
-                    </div>
-                    <!-- Card clickeable completa -->
-                    <a href="/clients/manage" th:href="@{/clients/manage}" class="info-card-link">
-                        <div class="info-card">
-                            <div class="card-header">
-                                <div class="card-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                </div>
-                                <h2>Client Management</h2>
-                            </div>
-                            <div class="card-body">
-                                <div class="card-description">
-                                    <p>Register and manage OAuth2 clients. Configure redirect URIs, grant types, and authentication methods.</p>
-                                </div>
-                                <div class="card-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-value">5</span>
-                                        <span class="stat-label">Active Clients</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>p
-                    <div class="feature-item">
-                        <div class="feature-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="16 18 22 12 16 6"></polyline>
-                                <polyline points="8 6 2 12 8 18"></polyline>
-                            </svg>
-                        </div>
-                        <h4>PKCE Support</h4>
-                        <p>Proof Key for Code Exchange for enhanced security</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="actions-section">
-        <a href="/.well-known/openid-configuration" class="action-button primary" target="_blank">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Configuration</span>
-        </a>
-
-        <a href="/oauth2/jwks" class="action-button secondary" target="_blank">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-            </svg>
-            <span>Public Keys</span>
-        </a>
-
-        <form th:action="@{/logout}" method="post" style="display: inline;">
-            <button type="submit" class="action-button danger">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
+        <!-- Status Card -->
+        <div class="status-card" th:if="${username}">
+            <div class="status-icon success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span>Logout</span>
-            </button>
-        </form>
+            </div>
+            <div class="status-content">
+                <h3>Authentication Successful</h3>
+                <p>You are securely authenticated and ready to proceed</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- OAuth2 Endpoints Card -->
+            <div class="info-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h2>OAuth2 Endpoints</h2>
+                </div>
+                <div class="card-body">
+                    <div class="endpoint-list">
+                        <div class="endpoint-item">
+                            <span class="endpoint-label">Authorization</span>
+                            <code class="endpoint-url">/oauth2/authorize</code>
+                        </div>
+                        <div class="endpoint-item">
+                            <span class="endpoint-label">Token</span>
+                            <code class="endpoint-url">/oauth2/token</code>
+                        </div>
+                        <div class="endpoint-item">
+                            <span class="endpoint-label">Introspect</span>
+                            <code class="endpoint-url">/oauth2/introspect</code>
+                        </div>
+                        <div class="endpoint-item">
+                            <span class="endpoint-label">Revoke</span>
+                            <code class="endpoint-url">/oauth2/revoke</code>
+                        </div>
+                        <div class="endpoint-item">
+                            <span class="endpoint-label">JWK Set</span>
+                            <code class="endpoint-url">/oauth2/jwks</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OIDC Discovery Card -->
+            <div class="info-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                            </path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <h2>OpenID Connect</h2>
+                </div>
+                <div class="card-body">
+                    <div class="endpoint-list">
+                        <div class="endpoint-item">
+                            <span class="endpoint-label">Configuration</span>
+                            <code class="endpoint-url">/.well-known/openid-configuration</code>
+                        </div>
+                        <div class="endpoint-item">
+                            <span class="endpoint-label">UserInfo</span>
+                            <code class="endpoint-url">/userinfo</code>
+                        </div>
+                        <div class="endpoint-item">
+                            <span class="endpoint-label">OAuth2 Metadata</span>
+                            <code class="endpoint-url">/.well-known/oauth-authorization-server</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div>
+            <h2>Clients</h2>
+            <div style="display: inline-flex; width: 100%; margin-bottom: 1rem;">
+                <input type="text" id="client-search" placeholder="Search clients..." class="search-input" />
+                <button id="search-button" class="action-button secondary" onclick="search()">
+                    <span>Search</span>
+                </button>
+            </div>
+
+            <table class="clients-table">
+                <thead>
+                    <tr>
+                        <th>Client ID</th>
+                        <th>Name</th>
+                        <th>Authentication Methods</th>
+                        <th>Grant Types</th>
+                        <th>Redirect URIs</th>
+                        <th>Scopes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <button id="prev-page" onclick="goToPage(currentPage - 1)">Previous</button>
+                <span class="page-info">Page <span id="page-num">1</span> of <span id="total-pages">1</span></span>
+                <button id="next-page" onclick="goToPage(currentPage + 1)">Next</button>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-section">
+            <a href="/.well-known/openid-configuration" class="action-button primary" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>View Configuration</span>
+            </a>
+
+            <a href="/oauth2/jwks" class="action-button secondary" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4">
+                    </path>
+                </svg>
+                <span>Public Keys</span>
+            </a>
+
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="action-button danger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <footer class="home-footer">
+            <p>OAuth2 Authorization Server v1.0 • Vektrom</p>
+        </footer>
     </div>
 
-    <!-- Footer -->
-    <footer class="home-footer">
-        <p>OAuth2 Authorization Server v1.0 • Powered by Spring Security</p>
-    </footer>
-</div>
+    <script>
+        const PAGE_SIZE = 5;
+        let currentPage = 0;
+        let currentQuery = '';
+
+        const tableBody = document.getElementById('table-body');
+        const pageNumEl = document.getElementById('page-num');
+        const totalPagesEl = document.getElementById('total-pages');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+
+        function renderClients(clients) {
+            tableBody.innerHTML = '';
+            clients.content.forEach(client => {
+                const row = document.createElement('tr');
+                const authenticationMethods = client.authenticationMethods.map(method => `<span class="auth-method">${method}</span>`);
+                const authorizationGrantTypes = client.authorizationGrantTypes.map(method => `<span class="auth-grant-type">${method}</span>`);
+                const redirectUris = client.redirectUris.map(uri => `<a href="${uri}" target="_blank">${uri}</a>`);
+                row.innerHTML = `
+                    <td>${client.clientId}</td>
+                    <td>${client.clientName}</td>
+                    <td>${authenticationMethods.join('')}</td>
+                    <td>${authorizationGrantTypes.join('')}</td>
+                    <td>${redirectUris.join('')}</td>
+                    <td>${client.scopes.join(', ')}</td>
+                    <td><button id='table-edit-button'>Edit</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            pageNumEl.textContent = clients.number + 1;
+            totalPagesEl.textContent = clients.totalPages;
+            prevBtn.disabled = clients.first;
+            nextBtn.disabled = clients.last;
+        }
+
+        function fetchClients(page, size, clientName) {
+            const params = new URLSearchParams({ page, size });
+            if (clientName) params.set('clientName', clientName);
+            fetch(`/api/v1/client/all?${params}`)
+                .then(response => response.json())
+                .then(renderClients)
+                .catch(error => console.error('Error fetching clients:', error));
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            fetchClients(currentPage, PAGE_SIZE, currentQuery);
+        }
+
+        function search() {
+            currentPage = 0;
+            currentQuery = document.getElementById('client-search').value;
+            fetchClients(currentPage, PAGE_SIZE, currentQuery);
+        }
+
+        fetchClients(currentPage, PAGE_SIZE, currentQuery);
+    </script>
 </body>
+
 </html>

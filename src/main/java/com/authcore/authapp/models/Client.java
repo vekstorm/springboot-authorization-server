@@ -12,8 +12,8 @@ import org.springframework.security.oauth2.server.authorization.settings.ClientS
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity(name = "client")
 @NoArgsConstructor
@@ -23,8 +23,8 @@ import java.util.Set;
 public class Client {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private String clientId;
 

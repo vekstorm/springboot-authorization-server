@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity(name = "app_user")
 @NoArgsConstructor
@@ -22,8 +23,8 @@ import java.util.Set;
 public class AppUser implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "username", unique = true, length = 50, nullable = false)
     private String username;
@@ -76,7 +77,7 @@ public class AppUser implements UserDetails {
     private boolean disabled;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name="app_user_role", joinColumns = @JoinColumn(name = "app_user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "app_user_role", joinColumns = @JoinColumn(name = "app_user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
     @Override

@@ -6,7 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
 
 @Controller
-public class HelloController {
+public class HomeController {
 
     @GetMapping("/")
     public String index(Authentication authentication, Model model) {
