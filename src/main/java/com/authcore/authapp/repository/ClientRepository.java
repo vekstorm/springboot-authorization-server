@@ -19,4 +19,6 @@ public interface ClientRepository extends JpaRepository<Client, UUID> {
 
     Page<Client> findAll(Pageable pageable);
 
+    void deleteByClientId(String clientId);
+
 }

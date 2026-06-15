@@ -6,161 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Authorization Server - Home</title>
     <link rel="stylesheet" href="/assets/css/home.css" th:href="@{/assets/css/home.css}" />
-    <style>
-        .clients-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        .clients-table thead {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        .clients-table th {
-            padding: 14px 16px;
-            text-align: left;
-            font-weight: 600;
-            color: #fff;
-            /* text-transform: uppercase; */
-            letter-spacing: 0.5px;
-            font-size: 0.8rem;
-        }
-
-        .clients-table td {
-            padding: 12px 16px;
-            color: #e0e0e0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            transition: background 0.2s ease;
-        }
-
-        .clients-table tbody tr:hover td {
-            background: rgba(102, 126, 234, 0.12);
-        }
-
-        .clients-table tbody tr:nth-child(even) td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .clients-table tbody tr:nth-child(even):hover td {
-            background: rgba(102, 126, 234, 0.12);
-        }
-
-        .clients-table button {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            color: #fff;
-            background: #667eea;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .auth-method {
-            display: inline-block;
-            padding: 2px 8px;
-            margin: 2px 4px 2px 0;
-            font-size: 0.75rem;
-            color: #fff;
-            background: #764ba2;
-            border-radius: 4px;
-        }
-
-        .auth-grant-type {
-            display: inline-block;
-            padding: 2px 8px;
-            margin: 2px 4px 2px 0;
-            font-size: 0.75rem;
-            color: #fff;
-            background: #667eea;
-            border-radius: 4px;
-        }
-
-        .clients-table td a {
-            color: #93b0ff;
-            text-decoration: none;
-            border-bottom: 1px solid transparent;
-            transition: color 0.2s ease, border-color 0.2s ease;
-        }
-
-        .clients-table td a:visited {
-            color: #b794f4;
-        }
-
-        .clients-table td a:hover {
-            color: #c0d0ff;
-            border-bottom-color: #93b0ff;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 16px;
-            font-size: 0.9rem;
-            color: #e0e0e0;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            outline: none;
-            backdrop-filter: blur(10px);
-            box-sizing: border-box;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.35);
-        }
-
-        .search-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
-        }
-
-        .pagination {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin: 1rem 0 2rem;
-        }
-
-        .pagination button {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            color: #fff;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s ease, border-color 0.2s ease;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            background: rgba(102, 126, 234, 0.2);
-            border-color: #667eea;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-        }
-
-        .pagination .page-info {
-            color: #b0b0b0;
-            font-size: 0.85rem;
-            padding: 0 12px;
-        }
-    </style>
 </head>
 
 <body>
     <!-- Fondo animado -->
+    <div class="background-grid"></div>
     <div class="background-gradient"></div>
     <div class="background-shapes">
         <div class="shape shape-1"></div>
@@ -281,34 +131,200 @@
 
 
         <div>
-            <h2>Clients</h2>
-            <div style="display: inline-flex; width: 100%; margin-bottom: 1rem;">
+            <div class="clients-header">
+                <h2>Clients</h2>
+                <button class="action-button primary" onclick="openCreateModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    <span>Create Client</span>
+                </button>
+            </div>
+            <div class="search-bar">
                 <input type="text" id="client-search" placeholder="Search clients..." class="search-input" />
                 <button id="search-button" class="action-button secondary" onclick="search()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
                     <span>Search</span>
                 </button>
             </div>
 
-            <table class="clients-table">
-                <thead>
-                    <tr>
-                        <th>Client ID</th>
-                        <th>Name</th>
-                        <th>Authentication Methods</th>
-                        <th>Grant Types</th>
-                        <th>Redirect URIs</th>
-                        <th>Scopes</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                </tbody>
-            </table>
+            <div class="clients-table-wrapper">
+                <table class="clients-table">
+                    <thead>
+                        <tr>
+                            <th>Client ID</th>
+                            <th>Name</th>
+                            <th>Authentication Methods</th>
+                            <th>Grant Types</th>
+                            <th>Redirect URIs</th>
+                            <th>Scopes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                    </tbody>
+                </table>
+            </div>
 
             <div class="pagination">
                 <button id="prev-page" onclick="goToPage(currentPage - 1)">Previous</button>
                 <span class="page-info">Page <span id="page-num">1</span> of <span id="total-pages">1</span></span>
                 <button id="next-page" onclick="goToPage(currentPage + 1)">Next</button>
+            </div>
+        </div>
+
+        <!-- Client Modal -->
+        <div class="modal-overlay" id="client-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">Create Client</h3>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <form id="client-form" onsubmit="saveClient(event)">
+                    <div class="form-group">
+                        <label for="client-id">Client ID</label>
+                        <input type="text" id="client-id" name="clientId" placeholder="my-client-id" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="client-secret">Client Secret</label>
+                        <input type="text" id="client-secret" name="clientSecret"
+                            placeholder="Auto-generated if empty" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="client-name">Client Name</label>
+                        <input type="text" id="client-name" name="clientName" placeholder="My Client" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Authentication Methods</label>
+                        <div class="multi-select" id="auth-methods-select">
+                            <div class="multi-select-trigger" onclick="toggleDropdown('auth-methods-dropdown')">
+                                <div class="multi-select-tags" id="auth-methods-tags"><span
+                                        class="multi-select-placeholder">Select methods...</span></div>
+                                <span class="multi-select-arrow">▾</span>
+                            </div>
+                            <div class="multi-select-dropdown" id="auth-methods-dropdown">
+                                <div class="multi-option" data-value="client_secret_basic"
+                                    onclick="toggleOption('auth-methods',this)">
+                                    <span class="check-indicator"></span> client_secret_basic
+                                </div>
+                                <div class="multi-option" data-value="client_secret_post"
+                                    onclick="toggleOption('auth-methods',this)">
+                                    <span class="check-indicator"></span> client_secret_post
+                                </div>
+                                <div class="multi-option" data-value="client_secret_jwt"
+                                    onclick="toggleOption('auth-methods',this)">
+                                    <span class="check-indicator"></span> client_secret_jwt
+                                </div>
+                                <div class="multi-option" data-value="private_key_jwt"
+                                    onclick="toggleOption('auth-methods',this)">
+                                    <span class="check-indicator"></span> private_key_jwt
+                                </div>
+                                <div class="multi-option" data-value="none" onclick="toggleOption('auth-methods',this)">
+                                    <span class="check-indicator"></span> none
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Grant Types</label>
+                        <div class="multi-select" id="grant-types-select">
+                            <div class="multi-select-trigger" onclick="toggleDropdown('grant-types-dropdown')">
+                                <div class="multi-select-tags" id="grant-types-tags"><span
+                                        class="multi-select-placeholder">Select grant types...</span></div>
+                                <span class="multi-select-arrow">▾</span>
+                            </div>
+                            <div class="multi-select-dropdown" id="grant-types-dropdown">
+                                <div class="multi-option" data-value="authorization_code"
+                                    onclick="toggleOption('grant-types',this)">
+                                    <span class="check-indicator"></span> authorization_code
+                                </div>
+                                <div class="multi-option" data-value="client_credentials"
+                                    onclick="toggleOption('grant-types',this)">
+                                    <span class="check-indicator"></span> client_credentials
+                                </div>
+                                <div class="multi-option" data-value="refresh_token"
+                                    onclick="toggleOption('grant-types',this)">
+                                    <span class="check-indicator"></span> refresh_token
+                                </div>
+                                <div class="multi-option" data-value="urn:ietf:params:oauth:grant-type:device_code"
+                                    onclick="toggleOption('grant-types',this)">
+                                    <span class="check-indicator"></span> device_code
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Scopes</label>
+                        <div class="multi-select" id="scopes-select">
+                            <div class="multi-select-trigger" onclick="toggleDropdown('scopes-dropdown')">
+                                <div class="multi-select-tags" id="scopes-tags"><span
+                                        class="multi-select-placeholder">Select scopes...</span></div>
+                                <span class="multi-select-arrow">▾</span>
+                            </div>
+                            <div class="multi-select-dropdown" id="scopes-dropdown">
+                                <div class="multi-option" data-value="openid" onclick="toggleOption('scopes',this)">
+                                    <span class="check-indicator"></span> openid
+                                </div>
+                                <div class="multi-option" data-value="profile" onclick="toggleOption('scopes',this)">
+                                    <span class="check-indicator"></span> profile
+                                </div>
+                                <div class="multi-option" data-value="email" onclick="toggleOption('scopes',this)">
+                                    <span class="check-indicator"></span> email
+                                </div>
+                                <div class="multi-option" data-value="address" onclick="toggleOption('scopes',this)">
+                                    <span class="check-indicator"></span> address
+                                </div>
+                                <div class="multi-option" data-value="phone" onclick="toggleOption('scopes',this)">
+                                    <span class="check-indicator"></span> phone
+                                </div>
+                                <div class="multi-option" data-value="offline_access"
+                                    onclick="toggleOption('scopes',this)">
+                                    <span class="check-indicator"></span> offline_access
+                                </div>
+                                <div class="multi-option" data-value="api.read" onclick="toggleOption('scopes',this)">
+                                    <span class="check-indicator"></span> api.read
+                                </div>
+                                <div class="multi-option" data-value="api.write" onclick="toggleOption('scopes',this)">
+                                    <span class="check-indicator"></span> api.write
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Redirect URIs (one per line)</label>
+                        <textarea id="redirect-uris"
+                            placeholder="http://localhost:8080/callback&#10;http://localhost:3000/auth/callback"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Post Logout Redirect URIs (one per line)</label>
+                        <textarea id="post-logout-uris" placeholder="http://localhost:8080/logout-callback"></textarea>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="require-proof-key" />
+                            <span>Require Proof Key for Code Exchange (PKCE)</span>
+                        </label>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="modal-save-btn">Create Client</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -357,29 +373,257 @@
         const PAGE_SIZE = 5;
         let currentPage = 0;
         let currentQuery = '';
+        let isEditMode = false;
 
         const tableBody = document.getElementById('table-body');
         const pageNumEl = document.getElementById('page-num');
         const totalPagesEl = document.getElementById('total-pages');
         const prevBtn = document.getElementById('prev-page');
         const nextBtn = document.getElementById('next-page');
+        const modal = document.getElementById('client-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const saveBtn = document.getElementById('modal-save-btn');
+
+        const multiSelectData = {};
+
+        document.addEventListener('click', function (e) {
+            if (e.target?.id === 'delete-client') {
+                try {
+                    var deleteBtn = e.target.closest('[data-client]');
+                    var client = JSON.parse(deleteBtn.dataset.client);
+                    if (confirm('Are you sure you want to delete client: ' + client.clientId + '?')) {
+                        fetch('/api/v1/client/' + client.clientId, {
+                            method: 'DELETE'
+                        })
+                            .then(function (r) { return r.json(); })
+                            .then(function (data) {
+                                if (data.status === 'OK' || data.message) {
+                                    fetchClients(currentPage, PAGE_SIZE, currentQuery);
+                                } else {
+                                    alert('Error: ' + (data.message || 'Unknown error'));
+                                }
+                            })
+                            .catch(function (err) {
+                                alert('Error deleting client: ' + err.message);
+                            });
+                    }
+                } catch (err) {
+                    console.error('Error parsing client data:', err);
+                }
+            } else if (e.target?.id === 'edit-client') {
+                try {
+                    var editBtn = e.target.closest('[data-client]');
+                    var client = JSON.parse(editBtn.dataset.client);
+                    openEditModal(client);
+                } catch (err) {
+                    console.error('Error parsing client data:', err);
+                }
+            }
+        });
+
+        function initMultiSelect(id) {
+            multiSelectData[id] = new Set();
+            renderTags(id);
+        }
+
+        function toggleDropdown(id) {
+            const select = document.getElementById(id).closest('.multi-select');
+            select.classList.toggle('open');
+        }
+
+        function closeDropdowns() {
+            document.querySelectorAll('.multi-select.open').forEach(el => el.classList.remove('open'));
+        }
+
+        function toggleOption(listId, el) {
+            var value = el.dataset.value;
+            var checked = el.classList.toggle('checked');
+            if (checked) {
+                multiSelectData[listId].add(value);
+            } else {
+                multiSelectData[listId].delete(value);
+            }
+            renderTags(listId);
+        }
+
+        function removeOption(listId, val) {
+            multiSelectData[listId].delete(val);
+            var opt = document.querySelector('#' + listId + '-dropdown .multi-option[data-value="' + val.replace(/"/g, '\\"') + '"]');
+            if (opt) opt.classList.remove('checked');
+            renderTags(listId);
+        }
+
+        function renderTags(listId) {
+            const container = document.getElementById(listId + '-tags');
+            const data = multiSelectData[listId];
+            if (!data || data.size === 0) {
+                const placeholder = listId === 'auth-methods' ? 'Select methods...'
+                    : listId === 'grant-types' ? 'Select grant types...'
+                        : 'Select scopes...';
+                container.innerHTML = '<span class="multi-select-placeholder">' + placeholder + '</span>';
+                return;
+            }
+            container.innerHTML = '';
+            data.forEach(function (val) {
+                const tag = document.createElement('span');
+                tag.className = 'multi-select-tag';
+                tag.innerHTML = val + ' <button type="button" class="multi-select-tag-remove" onclick="removeOption(\'' + listId + '\',\'' + val.replace(/'/g, "\\'") + '\')">&times;</button>';
+                container.appendChild(tag);
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('client-id').value = '';
+            document.getElementById('client-id').readOnly = false;
+            document.getElementById('client-secret').value = '';
+            document.getElementById('client-name').value = '';
+            document.getElementById('redirect-uris').value = '';
+            document.getElementById('post-logout-uris').value = '';
+            document.getElementById('require-proof-key').checked = false;
+            ['auth-methods', 'grant-types', 'scopes'].forEach(function (id) {
+                if (multiSelectData[id]) {
+                    multiSelectData[id].clear();
+                    renderTags(id);
+                }
+                document.querySelectorAll('#' + id + '-dropdown .multi-option').forEach(function (opt) {
+                    opt.classList.remove('checked');
+                });
+            });
+            closeDropdowns();
+        }
+
+        function openCreateModal() {
+            isEditMode = false;
+            modalTitle.textContent = 'Create Client';
+            saveBtn.textContent = 'Create Client';
+            resetForm();
+            modal.classList.add('open');
+        }
+
+        function openEditModal(client) {
+            isEditMode = true;
+            modalTitle.textContent = 'Edit Client';
+            saveBtn.textContent = 'Save Changes';
+
+            document.getElementById('client-id').value = client.clientId || '';
+            document.getElementById('client-id').readOnly = true;
+            document.getElementById('client-secret').value = '';
+            document.getElementById('client-name').value = client.clientName || '';
+            document.getElementById('redirect-uris').value = (client.redirectUris || []).join('\n');
+            document.getElementById('post-logout-uris').value = (client.postLogoutRedirectUris || []).join('\n');
+            document.getElementById('require-proof-key').checked = !!client.requireProofKey;
+
+            ['auth-methods', 'grant-types', 'scopes'].forEach(function (id) {
+                if (multiSelectData[id]) multiSelectData[id].clear();
+                document.querySelectorAll('#' + id + '-dropdown .multi-option').forEach(function (opt) {
+                    opt.classList.remove('checked');
+                });
+            });
+
+            ['authenticationMethods', 'authorizationGrantTypes', 'scopes'].forEach(function (field) {
+                var listId = field === 'authenticationMethods' ? 'auth-methods'
+                    : field === 'authorizationGrantTypes' ? 'grant-types' : 'scopes';
+                var values = client[field] || [];
+                values.forEach(function (val) {
+                    if (multiSelectData[listId]) multiSelectData[listId].add(val);
+                    var opt = document.querySelector('#' + listId + '-dropdown .multi-option[data-value="' + val.replace(/"/g, '\\"') + '"]');
+                    if (opt) opt.classList.add('checked');
+                });
+                renderTags(listId);
+            });
+
+            closeDropdowns();
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            resetForm();
+        }
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        function saveClient(e) {
+            console.log(e);
+            e.preventDefault();
+
+            var clientId = document.getElementById('client-id').value.trim();
+            var clientSecret = document.getElementById('client-secret').value.trim();
+            var clientName = document.getElementById('client-name').value.trim();
+            var redirectUris = document.getElementById('redirect-uris').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+            var postLogoutRedirectUris = document.getElementById('post-logout-uris').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+            var requireProofKey = document.getElementById('require-proof-key').checked;
+
+            if (!clientId || !clientName) {
+                alert('Client ID and Client Name are required.');
+                return;
+            }
+
+            var body = {
+                clientId: clientId,
+                clientSecret: clientSecret || undefined,
+                clientName: clientName,
+                authenticationMethods: Array.from(multiSelectData['auth-methods'] || []),
+                authorizationGrantTypes: Array.from(multiSelectData['grant-types'] || []),
+                scopes: Array.from(multiSelectData['scopes'] || []),
+                redirectUris: redirectUris,
+                postLogoutRedirectUris: postLogoutRedirectUris,
+                requireProofKey: requireProofKey
+            };
+
+            fetch('/api/v1/client', {
+                method: isEditMode ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.status === 'CREATED' || data.message) {
+                        closeModal();
+                        fetchClients(currentPage, PAGE_SIZE, currentQuery);
+                    } else {
+                        alert('Error: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(function (err) {
+                    alert('Error saving client: ' + err.message);
+                });
+        }
 
         function renderClients(clients) {
+            console.log(clients);
             tableBody.innerHTML = '';
-            clients.content.forEach(client => {
-                const row = document.createElement('tr');
-                const authenticationMethods = client.authenticationMethods.map(method => `<span class="auth-method">${method}</span>`);
-                const authorizationGrantTypes = client.authorizationGrantTypes.map(method => `<span class="auth-grant-type">${method}</span>`);
-                const redirectUris = client.redirectUris.map(uri => `<a href="${uri}" target="_blank">${uri}</a>`);
-                row.innerHTML = `
-                    <td>${client.clientId}</td>
-                    <td>${client.clientName}</td>
-                    <td>${authenticationMethods.join('')}</td>
-                    <td>${authorizationGrantTypes.join('')}</td>
-                    <td>${redirectUris.join('')}</td>
-                    <td>${client.scopes.join(', ')}</td>
-                    <td><button id='table-edit-button'>Edit</button></td>
-                `;
+            clients.content.forEach(function (client) {
+                var row = document.createElement('tr');
+                var authenticationMethods = (client.authenticationMethods || []).map(function (m) {
+                    return '<span class="auth-method">' + m + '</span>';
+                });
+                var authorizationGrantTypes = (client.authorizationGrantTypes || []).map(function (m) {
+                    return '<span class="auth-grant-type">' + m + '</span>';
+                });
+                var redirectUris = (client.redirectUris || []).map(function (uri) {
+                    return '<a href="' + uri.replace(/"/g, '&quot;') + '" target="_blank">' + uri.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</a>';
+                });
+                var escaped = JSON.stringify(client).replace(/'/g, "&#39;");
+                row.innerHTML =
+                    '<td>' + (client.clientId || '') + '</td>' +
+                    '<td>' + (client.clientName || '') + '</td>' +
+                    '<td>' + authenticationMethods.join('') + '</td>' +
+                    '<td>' + authorizationGrantTypes.join('') + '</td>' +
+                    '<td>' + redirectUris.join('') + '</td>' +
+                    '<td>' + ((client.scopes || []).join(', ')) + '</td>' +
+                    '<td class="actions-cell">' +
+                    '<div class="actions-container">' +
+                    '<button id="edit-client" class="btn-edit" data-client=\'' + escaped + '\'>Edit</button> ' +
+                    '<button id="delete-client" class="btn-delete" data-client=\'' + escaped + '\'>Delete</button>' +
+                    '</div>' +
+                    '</td>';
                 tableBody.appendChild(row);
             });
 
@@ -390,12 +634,12 @@
         }
 
         function fetchClients(page, size, clientName) {
-            const params = new URLSearchParams({ page, size });
+            var params = new URLSearchParams({ page: page, size: size });
             if (clientName) params.set('clientName', clientName);
-            fetch(`/api/v1/client/all?${params}`)
-                .then(response => response.json())
+            fetch('/api/v1/client/all?' + params.toString())
+                .then(function (r) { return r.json(); })
                 .then(renderClients)
-                .catch(error => console.error('Error fetching clients:', error));
+                .catch(function (err) { console.error('Error fetching clients:', err); });
         }
 
         function goToPage(page) {
@@ -409,6 +653,9 @@
             fetchClients(currentPage, PAGE_SIZE, currentQuery);
         }
 
+        initMultiSelect('auth-methods');
+        initMultiSelect('grant-types');
+        initMultiSelect('scopes');
         fetchClients(currentPage, PAGE_SIZE, currentQuery);
     </script>
 </body>

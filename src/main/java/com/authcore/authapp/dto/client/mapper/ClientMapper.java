@@ -37,6 +37,7 @@ public class ClientMapper {
     public Page<ClientResponseDto> toClientResponseDtoPage(Page<Client> clients) {
         return clients.map(client -> {
             ClientResponseDto dto = new ClientResponseDto();
+            dto.setId(client.getId().toString());
             dto.setClientId(client.getClientId());
             dto.setClientName(client.getClientName());
             dto.setAuthenticationMethods(client.getAuthenticationMethods().stream()

@@ -3,6 +3,7 @@ package com.authcore.authapp.controllers;
 import com.authcore.authapp.dto.AppResponseDto;
 import com.authcore.authapp.dto.client.ClientCreateDto;
 import com.authcore.authapp.dto.client.ClientResponseDto;
+import com.authcore.authapp.dto.client.ClientUpdateDto;
 import com.authcore.authapp.services.client.ClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,20 @@ public class ClientController {
         }
     }
 
+    @PutMapping
+    public ResponseEntity<AppResponseDto> update(@RequestBody ClientUpdateDto dto) {
+        log.info("Received request to update client: {}", dto.getClientId());
+        try {
+            AppResponseDto response = clientService.saveClient(dto);
+            log.info("Client updated successfully: {}", dto.getClientId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            log.error("Error updating client: {}", dto.getClientId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AppResponseDto(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
+        }
+    }
+
     @GetMapping("/all")
     public ResponseEntity<Page<ClientResponseDto>> getAll(
             @RequestParam(required = false) String clientName,
@@ -51,4 +66,17 @@ public class ClientController {
         }
     }
 
+    @DeleteMapping("/{clientId}")
+    public ResponseEntity<AppResponseDto> deleteClient(@PathVariable String clientId) {
+        log.info("Received request to delete client with ID: {}", clientId);
+        try {
+            clientService.deleteClient(clientId);
+            log.info("Client deleted successfully with ID: {}", clientId);
+            return ResponseEntity.ok(new AppResponseDto(HttpStatus.OK, "Client deleted successfully"));
+        } catch (Exception e) {
+            log.error("Error deleting client with ID: {}", clientId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AppResponseDto(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
+        }
+    }
 }

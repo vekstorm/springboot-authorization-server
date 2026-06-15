@@ -1,17 +1,17 @@
+
 package com.authcore.authapp.dto.client;
 
+import lombok.Data;
 import java.util.Set;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class ClientResponseDto {
+@Data
+public class ClientUpdateDto {
 
     private String id;
 
     private String clientId;
+
+    private String clientSecret;
 
     private String clientName;
 

@@ -26,6 +26,7 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(unique = true, length = 100, nullable = false)
     private String clientId;
 
     private Instant clientIdIssuedAt;

@@ -3,9 +3,12 @@ package com.authcore.authapp.services.client;
 import com.authcore.authapp.dto.AppResponseDto;
 import com.authcore.authapp.dto.client.ClientCreateDto;
 import com.authcore.authapp.dto.client.ClientResponseDto;
+import com.authcore.authapp.dto.client.ClientUpdateDto;
 import com.authcore.authapp.dto.client.mapper.ClientMapper;
 import com.authcore.authapp.models.Client;
 import com.authcore.authapp.repository.ClientRepository;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Service
+@Transactional
 public class ClientServiceImpl implements ClientService, RegisteredClientRepository {
 
     private final ClientRepository clientRepository;
@@ -55,7 +59,7 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
     public AppResponseDto createClient(ClientCreateDto clientCreateDto) {
         try {
             Client client = clientFromDto(clientCreateDto);
-            clientRepository.save(client);
+            client = clientRepository.save(client);
             log.info("Client [{}] saved successfully with ID: {}", client.getClientName(), client.getId());
             return new AppResponseDto(HttpStatus.CREATED, "Client [" + client.getClientName() + "] saved successfully");
         } catch (Exception e) {
@@ -94,6 +98,40 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
         }
         return clientMapper
                 .toClientResponseDtoPage(clientRepository.findByClientNameContainingIgnoreCase(clientName, pageable));
+    }
+
+    @Override
+    public void deleteClient(String clientId) {
+        clientRepository.deleteByClientId(clientId);
+    }
+
+    @Override
+    public AppResponseDto saveClient(ClientUpdateDto clientUpdateDto) {
+        try {
+            Client client = clientRepository.findByClientId(clientUpdateDto.getClientId())
+                    .orElseThrow(() -> new RuntimeException(
+                            "Client not found with clientId: " + clientUpdateDto.getClientId()));
+
+            client.setClientName(clientUpdateDto.getClientName());
+            if (clientUpdateDto.getClientSecret() != null && !clientUpdateDto.getClientSecret().isEmpty()) {
+                client.setClientSecret(passwordEncoder.encode(clientUpdateDto.getClientSecret()));
+            }
+            client.setAuthorizationGrantTypes(
+                    ClientMapper.getAuthorizationGrantTypesFromNamesList(clientUpdateDto.getAuthorizationGrantTypes()));
+            client.setAuthenticationMethods(ClientMapper
+                    .getClientAuthenticationMethodsFromNamesList(clientUpdateDto.getAuthenticationMethods()));
+            client.setRedirectUris(clientUpdateDto.getRedirectUris());
+            client.setPostLogoutRedirectUris(clientUpdateDto.getPostLogoutRedirectUris());
+            client.setScopes(clientUpdateDto.getScopes());
+            client.setRequireProofKey(clientUpdateDto.isRequireProofKey());
+
+            clientRepository.save(client);
+            log.info("Client [{}] updated successfully with ID: {}", client.getClientName(), client.getId());
+            return new AppResponseDto(HttpStatus.OK, "Client [" + client.getClientName() + "] updated successfully");
+        } catch (Exception e) {
+            log.error("Error updating client", e);
+            throw new RuntimeException("Error updating client: " + e.getMessage(), e);
+        }
     }
 
 }
