@@ -35,7 +35,7 @@
                     <line x1="15" y1="9" x2="9" y2="15" />
                     <line x1="9" y1="9" x2="15" y2="15" />
                 </svg>
-                <span>Invalid username or password</span>
+                <span>Invalid email or password</span>
             </div>
 
             <div th:if="${param.registered}" class="alert alert-success">
@@ -66,10 +66,9 @@
 
             <form class="auth-form" id="signin-form" method="post" th:action="@{/login}">
                 <div class="form-group">
-                    <label for="username">Username</label>
+                    <label for="username">Email</label>
                     <div class="input-wrapper">
-                        <input type="text" id="username" name="username" placeholder="Enter your username" required
-                            autofocus>
+                        <input type="email" id="username" name="username" placeholder="Enter your email" required autofocus>
                     </div>
                 </div>
 
