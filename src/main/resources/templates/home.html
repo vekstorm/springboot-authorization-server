@@ -47,7 +47,15 @@
             </div>
             <div class="status-content">
                 <h3>Authentication Successful</h3>
-                <p>You are securely authenticated and ready to proceed</p>
+                <p>You are <strong th:text="${username}"></strong></p>
+            </div>
+        </div>
+
+        <div class="status-card" th:if="${authorities}">
+            <div class="status-content">
+                <h3>Authorities</h3>
+                </br>
+                <div th:each="authority : ${authorities}" th:text="${authority.authority}"></div>
             </div>
         </div>
 
@@ -607,6 +615,9 @@
                 var authorizationGrantTypes = (client.authorizationGrantTypes || []).map(function (m) {
                     return '<span class="auth-grant-type">' + m + '</span>';
                 });
+                var scopes = (client.scopes || []).map(function (m) {
+                    return '<span class="scope">' + m + '</span>';
+                });
                 var redirectUris = (client.redirectUris || []).map(function (uri) {
                     return '<a href="' + uri.replace(/"/g, '&quot;') + '" target="_blank">' + uri.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</a>';
                 });
@@ -617,7 +628,7 @@
                     '<td>' + authenticationMethods.join('') + '</td>' +
                     '<td>' + authorizationGrantTypes.join('') + '</td>' +
                     '<td>' + redirectUris.join('') + '</td>' +
-                    '<td>' + ((client.scopes || []).join(', ')) + '</td>' +
+                    '<td>' + scopes.join('') + '</td>' +
                     '<td class="actions-cell">' +
                     '<div class="actions-container">' +
                     '<button id="edit-client" class="btn-edit" data-client=\'' + escaped + '\'>Edit</button> ' +

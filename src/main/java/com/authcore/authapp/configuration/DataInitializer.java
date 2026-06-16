@@ -40,7 +40,7 @@ public class DataInitializer implements CommandLineRunner {
         Role adminRole = createRole("ROLE_ADMIN", "Administrator role with full access", allPermissions);
 
         List<Permission> readPermissions = allPermissions.stream()
-                .filter(p -> p.getName().endsWith(":read"))
+                .filter(p -> p.getName().endsWith(":read") && !p.getName().startsWith("client"))
                 .toList();
         Role userRole = createRole("ROLE_USER", "Standard user role with read-only access", readPermissions);
 

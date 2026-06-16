@@ -50,7 +50,8 @@ public class AuthorizationServerSecurityConfig {
                 http
                                 .securityMatcher("/auth/**", "/api/v1/client/**")
                                 .authorizeHttpRequests(authorize -> authorize
-                                                .anyRequest().permitAll())
+                                                .requestMatchers("/auth/**").permitAll()
+                                                .anyRequest().authenticated())
                                 .csrf(AbstractHttpConfigurer::disable);
                 return http.build();
         }

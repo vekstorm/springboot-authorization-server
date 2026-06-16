@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -84,7 +85,16 @@ public class AppUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        if (roles != null) {
+            for (Role role : roles) {
+                authorities.add(role);
+                if (role.getPermissions() != null) {
+                    authorities.addAll(role.getPermissions());
+                }
+            }
+        }
+        return authorities;
     }
 
     @Override

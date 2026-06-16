@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/v1/client")
@@ -22,6 +23,7 @@ public class ClientController {
     private final ClientService clientService;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('client:write')")
     public ResponseEntity<AppResponseDto> create(@RequestBody ClientCreateDto dto) {
         log.info("Received request to create client: {}", dto.getClientId());
         try {
@@ -36,6 +38,7 @@ public class ClientController {
     }
 
     @PutMapping
+    @PreAuthorize("hasAuthority('client:write')")
     public ResponseEntity<AppResponseDto> update(@RequestBody ClientUpdateDto dto) {
         log.info("Received request to update client: {}", dto.getClientId());
         try {
@@ -50,6 +53,7 @@ public class ClientController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAuthority('client:read')")
     public ResponseEntity<Page<ClientResponseDto>> getAll(
             @RequestParam(required = false) String clientName,
             @RequestParam(defaultValue = "0") int page,
@@ -67,6 +71,7 @@ public class ClientController {
     }
 
     @DeleteMapping("/{clientId}")
+    @PreAuthorize("hasAuthority('client:delete')")
     public ResponseEntity<AppResponseDto> deleteClient(@PathVariable String clientId) {
         log.info("Received request to delete client with ID: {}", clientId);
         try {
