@@ -2,6 +2,19 @@ spring:
   profiles:
     active: dev
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+              - openid
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
   datasource:
     url: jdbc:postgresql://<host>:5432/<db_name>?createDatabaseIfNotExist=true
     username: admin
@@ -27,3 +40,25 @@ logging:
   level:
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
+
+server:
+  port: 9000
+
+base:
+  url: http://localhost
+
+defaults:
+  admin-role: ROLE_ADMIN
+  user-role: ROLE_USER
+  admin-email: admin@email.com
+  admin-password: admin123
+  user-email: user@email.com
+  user-password: user123
+  client-id: oidc-client
+  client-secret: secret
+  client-name: OIDC Debugger
+  client-scope: openid
+  client-credentials-grant-type: client_credentials
+  authorization-code-grant-type: authorization_code
+  refresh-token-grant-type: refresh_token
+  redirect-uri: https://oauthdebugger.com/debug

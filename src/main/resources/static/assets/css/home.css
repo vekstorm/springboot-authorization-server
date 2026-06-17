@@ -1147,6 +1147,7 @@ body {
 
 /* Actions Section */
 .actions-section {
+    padding-top: 2rem;
     display: flex;
     gap: 16px;
     flex-wrap: wrap;

@@ -1,18 +1,25 @@
 package com.authcore.authapp.configuration;
 
 import com.authcore.authapp.models.AppUser;
+import com.authcore.authapp.models.Client;
 import com.authcore.authapp.models.Permission;
 import com.authcore.authapp.models.Role;
 import com.authcore.authapp.repository.AppUserRepository;
+import com.authcore.authapp.repository.ClientRepository;
 import com.authcore.authapp.repository.PermissionRepository;
 import com.authcore.authapp.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,32 +29,107 @@ import java.util.Set;
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
 
+    @Value("${defaults.admin-role}")
+    private String adminRoleName;
+
+    @Value("${defaults.user-role}")
+    private String userRoleName;
+
+    @Value("${defaults.admin-email}")
+    private String adminEmail;
+
+    @Value("${defaults.user-email}")
+    private String userEmail;
+
+    @Value("${defaults.admin-password}")
+    private String adminPassword;
+
+    @Value("${defaults.user-password}")
+    private String userPassword;
+
+    @Value("${defaults.client-id}")
+    private String defaultClientId;
+
+    @Value("${defaults.client-secret}")
+    private String defaultClientSecret;
+
+    @Value("${defaults.client-name}")
+    private String defaultClientName;
+
+    @Value("${defaults.client-scope}")
+    private String defaultClientScope;
+
+    @Value("${defaults.redirect-uri}")
+    private String defaultRedirectUri;
+
+    @Value("${defaults.client-credentials-grant-type}")
+    private String clientCredentialsGrantType;
+
+    @Value("${defaults.authorization-code-grant-type}")
+    private String authorizationCodeGrantType;
+
+    @Value("${defaults.refresh-token-grant-type}")
+    private String refreshTokenGrantType;
+
     private final PermissionRepository permissionRepository;
     private final RoleRepository roleRepository;
     private final AppUserRepository appUserRepository;
+    private final ClientRepository clientRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public void run(String... args) {
-        if (appUserRepository.findByEmail("admin@email.com").isPresent()) {
-            log.info("Default users already exist. Skipping data initialization.");
+        seedOidcClient();
+
+        if (appUserRepository.findByEmail(adminEmail).isPresent()) {
+            log.info("Default users already exist. Skipping user initialization.");
             return;
         }
 
         List<Permission> allPermissions = createPermissions();
 
-        Role adminRole = createRole("ROLE_ADMIN", "Administrator role with full access", allPermissions);
+        Role adminRole = createRole(adminRoleName, "Administrator role with full access", allPermissions);
 
         List<Permission> readPermissions = allPermissions.stream()
                 .filter(p -> p.getName().endsWith(":read") && !p.getName().startsWith("client"))
                 .toList();
-        Role userRole = createRole("ROLE_USER", "Standard user role with read-only access", readPermissions);
+        Role userRole = createRole(userRoleName, "Standard user role with read-only access", readPermissions);
 
-        createUser("admin", "admin@email.com", "admin123", "Admin", adminRole);
-        createUser("user", "user@email.com", "user123", "User", userRole);
+        createUser("admin", adminEmail, adminPassword, "Admin", adminRole);
+        createUser("user", userEmail, userPassword, "User", userRole);
 
         log.info("Database initialization completed successfully.");
+    }
+
+    private void seedOidcClient() {
+        Client client = clientRepository.findByClientId(defaultClientId).orElse(null);
+        boolean isNew = false;
+
+        if (client == null) {
+            client = Client.builder()
+                    .clientId(defaultClientId)
+                    .clientIdIssuedAt(Instant.now())
+                    .build();
+            isNew = true;
+        }
+
+        client.setClientName(defaultClientName);
+        client.setClientSecret(passwordEncoder.encode(defaultClientSecret));
+        client.setAuthenticationMethods(Set.of(
+                new ClientAuthenticationMethod("client_secret_basic"),
+                new ClientAuthenticationMethod("none")));
+        client.setAuthorizationGrantTypes(Set.of(
+                new AuthorizationGrantType(clientCredentialsGrantType),
+                new AuthorizationGrantType(authorizationCodeGrantType),
+                new AuthorizationGrantType(refreshTokenGrantType)));
+        client.setRedirectUris(Set.of(defaultRedirectUri));
+        client.setPostLogoutRedirectUris(Set.of());
+        client.setScopes(Set.of(defaultClientScope));
+        client.setRequireProofKey(true);
+
+        clientRepository.save(client);
+        log.info("{} OIDC client: {}", isNew ? "Created" : "Updated", defaultClientId);
     }
 
     private List<Permission> createPermissions() {

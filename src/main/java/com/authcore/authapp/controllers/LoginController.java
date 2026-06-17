@@ -1,8 +1,12 @@
 package com.authcore.authapp.controllers;
 
 import com.authcore.authapp.dto.user.AppUserCreateDto;
+import com.authcore.authapp.models.AppUser;
+import com.authcore.authapp.models.Permission;
 import com.authcore.authapp.services.user.AppUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,6 +76,38 @@ public class LoginController {
             model.addAttribute("regEmail", email);
             return "login";
         }
+    }
+
+    @GetMapping("/success")
+    public String oauth2Success(Authentication authentication, Model model) {
+        if (authentication != null && authentication.isAuthenticated()) {
+
+            if (authentication.getPrincipal() instanceof OAuth2User oAuth2User) {
+                AppUser appUser = appUserService.findByEmail(oAuth2User.getAttribute("email"));
+                model.addAttribute("username", appUser.getUsername());
+                model.addAttribute("email", appUser.getEmail());
+                model.addAttribute("name", appUser.getName());
+                model.addAttribute("surname", appUser.getSurname1());
+                model.addAttribute("permissions", appUser.getRoles().stream()
+                        .flatMap(role -> role.getPermissions().stream())
+                        .map(Permission::getName)
+                        .distinct()
+                        .toList());
+                model.addAttribute("isGoogle", true);
+            } else if (authentication.getPrincipal() instanceof AppUser user) {
+                model.addAttribute("username", user.getUsername());
+                model.addAttribute("email", user.getEmail());
+                model.addAttribute("name", user.getName());
+                model.addAttribute("surname", user.getSurname1());
+                model.addAttribute("permissions", user.getRoles().stream()
+                        .flatMap(role -> role.getPermissions().stream())
+                        .map(Permission::getName)
+                        .distinct()
+                        .toList());
+                model.addAttribute("isGoogle", false);
+            }
+        }
+        return "success";
     }
 
 }

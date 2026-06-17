@@ -2,6 +2,8 @@ package com.authcore.authapp.configuration.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -12,9 +14,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -25,6 +28,15 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 @EnableMethodSecurity
 @Slf4j
 public class AuthorizationServerSecurityConfig {
+
+        @Value("${base.url}")
+        private String host;
+
+        @Value("${server.port}")
+        private String port;
+
+        private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+        private final FormLoginSuccessHandler formLoginSuccessHandler;
 
         @Bean
         @Order(1)
@@ -52,23 +64,14 @@ public class AuthorizationServerSecurityConfig {
                                 .authorizeHttpRequests(authorize -> authorize
                                                 .requestMatchers("/auth/**").permitAll()
                                                 .anyRequest().authenticated())
+                                .oauth2ResourceServer(oauth2 -> oauth2.jwt(
+                                                jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                                 .csrf(AbstractHttpConfigurer::disable);
                 return http.build();
         }
 
         @Bean
         @Order(3)
-        public SecurityFilterChain adminApiSecurityFilterChain(HttpSecurity http) throws Exception {
-                http
-                                .securityMatcher("/api/admin/**")
-                                .authorizeHttpRequests(authorize -> authorize
-                                                .anyRequest().authenticated())
-                                .csrf(AbstractHttpConfigurer::disable);
-                return http.build();
-        }
-
-        @Bean
-        @Order(4)
         public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .authorizeHttpRequests(authorize -> authorize
@@ -84,19 +87,29 @@ public class AuthorizationServerSecurityConfig {
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .loginProcessingUrl("/login")
-                                                .defaultSuccessUrl("/", false)
-                                                .permitAll());
+                                                .successHandler(formLoginSuccessHandler)
+                                                .permitAll())
+                                .oauth2Login(oauth2 -> oauth2
+                                                .loginPage("/login")
+                                                .successHandler(oAuth2LoginSuccessHandler));
                 return http.build();
         }
 
         @Bean
-        public AuthorizationServerSettings authorizationServerSettings() {
-                return AuthorizationServerSettings.builder().issuer("http://localhost:9000").build();
+        public JwtAuthenticationConverter jwtAuthenticationConverter() {
+                JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+                grantedAuthoritiesConverter.setAuthorityPrefix("");
+                grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+
+                JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+                jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+                return jwtAuthenticationConverter;
         }
 
         @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
+        public AuthorizationServerSettings authorizationServerSettings() {
+                String baseUrl = host + ":" + port;
+                return AuthorizationServerSettings.builder().issuer(baseUrl).build();
         }
 
 }
