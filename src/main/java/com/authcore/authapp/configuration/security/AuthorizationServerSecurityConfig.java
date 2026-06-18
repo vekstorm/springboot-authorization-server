@@ -72,7 +72,6 @@ public class AuthorizationServerSecurityConfig {
                                                 (authorizationServer) -> authorizationServer
                                                                 .oidc(Customizer.withDefaults()))
                                 .authorizeHttpRequests((authorize) -> authorize
-                                                .requestMatchers("/auth/**").permitAll()
                                                 .anyRequest().authenticated())
                                 .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
                                                 new LoginUrlAuthenticationEntryPoint("/login"),
@@ -84,9 +83,8 @@ public class AuthorizationServerSecurityConfig {
         @Order(2)
         public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
                 http
-                                .securityMatcher("/auth/**", "/api/v1/client/**")
+                                .securityMatcher("/api/v1/client/**", "/api/v1/user/**", "/api/v1/role/**", "/api/v1/permission/**")
                                 .authorizeHttpRequests(authorize -> authorize
-                                                .requestMatchers("/auth/**").permitAll()
                                                 .anyRequest().authenticated())
                                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
                                                 jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))

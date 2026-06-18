@@ -2,12 +2,17 @@ package com.authcore.authapp.services.user;
 
 import com.authcore.authapp.dto.AppResponseDto;
 import com.authcore.authapp.dto.user.AppUserCreateDto;
+import com.authcore.authapp.dto.user.AppUserResponseDto;
+import com.authcore.authapp.dto.user.AppUserUpdateDto;
+import com.authcore.authapp.dto.user.mapper.AppUserMapper;
 import com.authcore.authapp.models.AppUser;
 import com.authcore.authapp.models.Role;
 import com.authcore.authapp.repository.AppUserRepository;
 import com.authcore.authapp.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +30,7 @@ public class AppUserServiceImpl implements AppUserService {
     private final AppUserRepository appUserRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AppUserMapper appUserMapper;
 
     @Override
     public AppResponseDto createUser(AppUserCreateDto dto) {
@@ -50,6 +56,98 @@ public class AppUserServiceImpl implements AppUserService {
         appUser.setRoles(roles);
         appUserRepository.save(appUser);
         return new AppResponseDto(HttpStatus.OK, "User created successfully");
+    }
+
+    @Override
+    public AppUserResponseDto getUserById(String id) {
+        AppUser user = appUserRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        return appUserMapper.toResponseDto(user);
+    }
+
+    @Override
+    public Page<AppUserResponseDto> getUsers(String search, Pageable pageable) {
+        if (search == null || search.isEmpty()) {
+            return appUserMapper.toResponseDtoPage(appUserRepository.findAll(pageable));
+        }
+        return appUserMapper.toResponseDtoPage(
+                appUserRepository.findByUsernameContainingIgnoreCase(search, pageable));
+    }
+
+    @Override
+    public AppResponseDto updateUser(String id, AppUserUpdateDto dto) {
+        try {
+            AppUser user = appUserRepository.findById(UUID.fromString(id))
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+            if (dto.getUsername() != null) {
+                user.setUsername(dto.getUsername());
+            }
+            if (dto.getEmail() != null) {
+                user.setEmail(dto.getEmail());
+            }
+            if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            }
+            if (dto.getName() != null) {
+                user.setName(dto.getName());
+            }
+            if (dto.getSurname1() != null) {
+                user.setSurname1(dto.getSurname1());
+            }
+            if (dto.getSurname2() != null) {
+                user.setSurname2(dto.getSurname2());
+            }
+            if (dto.getAddress() != null) {
+                user.setAddress(dto.getAddress());
+            }
+            if (dto.getPhone() != null) {
+                user.setPhone(dto.getPhone());
+            }
+            if (dto.getMetadata() != null) {
+                user.setMetadata(dto.getMetadata());
+            }
+
+            user.setGoogle(dto.isGoogle());
+            user.setMicrosoft(dto.isMicrosoft());
+            user.setFacebook(dto.isFacebook());
+            user.setGitHub(dto.isGitHub());
+            user.setExpired(dto.isExpired());
+            user.setLocked(dto.isLocked());
+            user.setCredentialsExpired(dto.isCredentialsExpired());
+            user.setDisabled(dto.isDisabled());
+
+            if (dto.getRoles() != null) {
+                Set<Role> roles = new HashSet<>();
+                dto.getRoles().forEach(rol -> {
+                    Role role = roleRepository.findByName(rol)
+                            .orElseThrow(() -> new RuntimeException("Role not found: " + rol));
+                    roles.add(role);
+                });
+                user.setRoles(roles);
+            }
+
+            appUserRepository.save(user);
+            log.info("User [{}] updated successfully", user.getUsername());
+            return new AppResponseDto(HttpStatus.OK, "User [" + user.getUsername() + "] updated successfully");
+        } catch (Exception e) {
+            log.error("Error updating user", e);
+            throw new RuntimeException("Error updating user: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public AppResponseDto deleteUser(String id) {
+        try {
+            AppUser user = appUserRepository.findById(UUID.fromString(id))
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            appUserRepository.delete(user);
+            log.info("User [{}] deleted successfully", user.getUsername());
+            return new AppResponseDto(HttpStatus.OK, "User [" + user.getUsername() + "] deleted successfully");
+        } catch (Exception e) {
+            log.error("Error deleting user", e);
+            throw new RuntimeException("Error deleting user: " + e.getMessage(), e);
+        }
     }
 
     @Override
