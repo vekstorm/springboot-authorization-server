@@ -39,6 +39,30 @@ public class AuthorizationServerSecurityConfig {
         private final FormLoginSuccessHandler formLoginSuccessHandler;
 
         @Bean
+        @Order(0)
+        public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .securityMatcher(
+                                                "/swagger-ui",
+                                                "/swagger-ui/",
+                                                "/swagger-ui.html",
+                                                "/swagger-ui/**",
+                                                "/v3/api-docs",
+                                                "/v3/api-docs/",
+                                                "/v3/api-docs/**",
+                                                "/v3/api-docs.yaml",
+                                                "/v3/api-docs/swagger-config")
+                                .authorizeHttpRequests(authorize -> authorize
+                                                .anyRequest().permitAll())
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .formLogin(AbstractHttpConfigurer::disable)
+                                .oauth2Login(AbstractHttpConfigurer::disable)
+                                .oauth2ResourceServer(AbstractHttpConfigurer::disable);
+
+                return http.build();
+        }
+
+        @Bean
         @Order(1)
         public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
                 OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
