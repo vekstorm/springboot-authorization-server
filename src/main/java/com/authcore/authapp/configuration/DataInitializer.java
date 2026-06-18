@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -116,16 +117,16 @@ public class DataInitializer implements CommandLineRunner {
 
         client.setClientName(defaultClientName);
         client.setClientSecret(passwordEncoder.encode(defaultClientSecret));
-        client.setAuthenticationMethods(Set.of(
+        client.setAuthenticationMethods(new HashSet<>(Set.of(
                 new ClientAuthenticationMethod("client_secret_basic"),
-                new ClientAuthenticationMethod("none")));
-        client.setAuthorizationGrantTypes(Set.of(
+                new ClientAuthenticationMethod("none"))));
+        client.setAuthorizationGrantTypes(new HashSet<>(Set.of(
                 new AuthorizationGrantType(clientCredentialsGrantType),
                 new AuthorizationGrantType(authorizationCodeGrantType),
-                new AuthorizationGrantType(refreshTokenGrantType)));
-        client.setRedirectUris(Set.of(defaultRedirectUri));
-        client.setPostLogoutRedirectUris(Set.of());
-        client.setScopes(Set.of(defaultClientScope));
+                new AuthorizationGrantType(refreshTokenGrantType))));
+        client.setRedirectUris(new HashSet<>(Set.of(defaultRedirectUri)));
+        client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
+        client.setScopes(new HashSet<>(Set.of("openid", "profile")));
         client.setRequireProofKey(true);
 
         clientRepository.save(client);

@@ -54,23 +54,29 @@ public class AppUser implements UserDetails {
     private String phone;
 
     @Column(name = "isGoogle")
+    @Builder.Default
     private boolean isGoogle = false;
 
     @Column(name = "isMicrosoft")
+    @Builder.Default
     private boolean isMicrosoft = false;
 
     @Column(name = "isFacebook")
+    @Builder.Default
     private boolean isFacebook = false;
 
     @Column(name = "isGitHub")
+    @Builder.Default
     private boolean isGitHub = false;
 
     private String metadata;
 
     @Column(name = "expired")
+    @Builder.Default
     private boolean expired = false;
 
     @Column(name = "locked")
+    @Builder.Default
     private boolean locked = false;
 
     @Column(name = "credentialsExpired")

@@ -34,6 +34,7 @@ public class Permission implements GrantedAuthority {
     private String description;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     @CreatedDate

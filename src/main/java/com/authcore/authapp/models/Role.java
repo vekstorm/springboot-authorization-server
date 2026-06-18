@@ -45,6 +45,7 @@ public class Role implements GrantedAuthority {
     }
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     @CreatedDate
