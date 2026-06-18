@@ -82,6 +82,7 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         seedOidcClient();
+        seedSwaggerClient();
 
         if (appUserRepository.findByEmail(adminEmail).isPresent()) {
             log.info("Default users already exist. Skipping user initialization.");
@@ -131,6 +132,37 @@ public class DataInitializer implements CommandLineRunner {
 
         clientRepository.save(client);
         log.info("{} OIDC client: {}", isNew ? "Created" : "Updated", defaultClientId);
+    }
+
+    private void seedSwaggerClient() {
+        Client client = clientRepository.findByClientId("swagger-ui").orElse(null);
+        boolean isNew = false;
+
+        if (client == null) {
+            client = Client.builder()
+                    .clientId("swagger-ui")
+                    .clientIdIssuedAt(Instant.now())
+                    .build();
+            isNew = true;
+        }
+
+        client.setClientName("Swagger UI");
+        client.setClientSecret(null);
+        client.setAuthenticationMethods(new HashSet<>(Set.of(
+                new ClientAuthenticationMethod("none"))));
+        client.setAuthorizationGrantTypes(new HashSet<>(Set.of(
+                new AuthorizationGrantType("authorization_code"))));
+        client.setRedirectUris(new HashSet<>(Set.of(
+                "http://localhost:9000/swagger-ui/oauth2-redirect.html")));
+        client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
+        client.setScopes(new HashSet<>(Set.of(
+                "openid", "profile",
+                "users.read", "users.write",
+                "roles.read", "roles.write")));
+        client.setRequireProofKey(true);
+
+        clientRepository.save(client);
+        log.info("{} Swagger UI client: swagger-ui", isNew ? "Created" : "Updated");
     }
 
     private List<Permission> createPermissions() {
