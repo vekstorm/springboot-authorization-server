@@ -190,7 +190,8 @@ public class DataInitializer implements CommandLineRunner {
                                 new AuthorizationGrantType("authorization_code"),
                                 new AuthorizationGrantType("refresh_token"))));
                 client.setRedirectUris(new HashSet<>(Set.of(
-                                "http://localhost:4200/authorized")));
+                                "http://localhost:4200/",
+                                "http://192.168.1.41:4200/")));
                 client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
                 client.setScopes(new HashSet<>(Set.of("openid", "profile", "offline_access")));
                 client.setRequireProofKey(true);

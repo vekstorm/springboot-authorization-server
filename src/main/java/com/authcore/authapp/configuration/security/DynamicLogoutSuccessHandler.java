@@ -15,7 +15,9 @@ public class DynamicLogoutSuccessHandler implements LogoutSuccessHandler {
 
     private static final Set<String> ALLOWED_ORIGINS = Set.of(
             "http://localhost:4200",
+            "http://192.168.1.41:4200",
             "http://localhost:8081",
+            "http://192.168.1.41:8081",
             "https://miapp.com");
 
     private static final String DEFAULT_TARGET = "/login?logout";
