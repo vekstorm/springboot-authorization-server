@@ -90,6 +90,10 @@ public class PermissionController {
         log.info("Received request to delete permission with id: {}", id);
         try {
             AppResponseDto response = permissionService.deletePermission(id);
+            HttpStatus status = response.getStatus();
+            if (status == HttpStatus.CONFLICT) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
             log.info("Permission deleted successfully with id: {}", id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -105,6 +109,10 @@ public class PermissionController {
         log.info("Received request to batch delete {} permissions", ids.size());
         try {
             AppResponseDto response = permissionService.deletePermissions(ids);
+            HttpStatus status = response.getStatus();
+            if (status == HttpStatus.CONFLICT) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
             log.info("Batch delete result: {}", response.getMessage());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
