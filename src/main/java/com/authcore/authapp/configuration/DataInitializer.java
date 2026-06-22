@@ -57,6 +57,9 @@ public class DataInitializer implements CommandLineRunner {
     @Value("${defaults.client-name}")
     private String defaultClientName;
 
+    @Value("${defaults.identity-client-secret}")
+    private String identityClientSecret;
+
     @Value("${defaults.client-scope}")
     private String defaultClientScope;
 
@@ -83,6 +86,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         seedOidcClient();
         seedSwaggerClient();
+        seedIdentityClient();
 
         if (appUserRepository.findByEmail(adminEmail).isPresent()) {
             log.info("Default users already exist. Skipping user initialization.");
@@ -163,6 +167,36 @@ public class DataInitializer implements CommandLineRunner {
 
         clientRepository.save(client);
         log.info("{} Swagger UI client: swagger-ui", isNew ? "Created" : "Updated");
+    }
+
+    private void seedIdentityClient() {
+        Client client = clientRepository.findByClientId("identity-client").orElse(null);
+        boolean isNew = false;
+
+        if (client == null) {
+            client = Client.builder()
+                    .clientId("identity-client")
+                    .clientIdIssuedAt(Instant.now())
+                    .build();
+            isNew = true;
+        }
+
+        client.setClientName("Identity App");
+        client.setClientSecret(passwordEncoder.encode(identityClientSecret));
+        client.setAuthenticationMethods(new HashSet<>(Set.of(
+                new ClientAuthenticationMethod("client_secret_basic"),
+                new ClientAuthenticationMethod("none"))));
+        client.setAuthorizationGrantTypes(new HashSet<>(Set.of(
+                new AuthorizationGrantType("authorization_code"),
+                new AuthorizationGrantType("refresh_token"))));
+        client.setRedirectUris(new HashSet<>(Set.of(
+                "http://localhost:4200/authorized")));
+        client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
+        client.setScopes(new HashSet<>(Set.of("openid", "profile", "offline_access")));
+        client.setRequireProofKey(true);
+
+        clientRepository.save(client);
+        log.info("{} identity client: identity-client", isNew ? "Created" : "Updated");
     }
 
     private List<Permission> createPermissions() {

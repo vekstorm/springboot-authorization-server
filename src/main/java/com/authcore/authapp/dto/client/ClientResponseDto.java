@@ -15,6 +15,8 @@ public class ClientResponseDto {
 
     private String clientName;
 
+    private String clientSecret;
+
     private Set<String> authenticationMethods;
 
     private Set<String> authorizationGrantTypes;

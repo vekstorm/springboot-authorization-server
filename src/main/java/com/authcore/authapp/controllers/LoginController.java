@@ -2,11 +2,17 @@ package com.authcore.authapp.controllers;
 
 import com.authcore.authapp.dto.user.AppUserCreateDto;
 import com.authcore.authapp.models.AppUser;
+import com.authcore.authapp.models.Client;
 import com.authcore.authapp.models.Permission;
+import com.authcore.authapp.repository.ClientRepository;
 import com.authcore.authapp.services.user.AppUserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +26,7 @@ import java.util.List;
 public class LoginController {
 
     private final AppUserService appUserService;
+    private final ClientRepository clientRepository;
 
     @GetMapping("/login")
     public String login(@RequestParam(required = false) String mode, Model model) {
@@ -76,6 +83,24 @@ public class LoginController {
             model.addAttribute("regEmail", email);
             return "login";
         }
+    }
+
+    @GetMapping("/exit")
+    public String exit(@RequestParam(required = false) String client_id,
+                       HttpServletRequest request, HttpServletResponse response,
+                       Authentication authentication) {
+        new SecurityContextLogoutHandler().logout(request, response, authentication);
+        new CookieClearingLogoutHandler("JSESSIONID").logout(request, response, authentication);
+
+        String redirectUrl = "/login?logout";
+        if (client_id != null) {
+            redirectUrl = clientRepository.findByClientId(client_id)
+                    .map(Client::getPostLogoutRedirectUris)
+                    .filter(uris -> !uris.isEmpty())
+                    .map(uris -> uris.iterator().next())
+                    .orElse(redirectUrl);
+        }
+        return "redirect:" + redirectUrl;
     }
 
     @GetMapping("/success")

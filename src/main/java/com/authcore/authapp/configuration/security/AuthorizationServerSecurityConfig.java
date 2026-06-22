@@ -30,13 +30,18 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 public class AuthorizationServerSecurityConfig {
 
         @Value("${base.url}")
-        private String host;
+        private String baseUrl;
 
         @Value("${server.port}")
         private String port;
 
         private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
         private final FormLoginSuccessHandler formLoginSuccessHandler;
+
+        @Bean
+        public DynamicLogoutSuccessHandler dynamicLogoutSuccessHandler() {
+                return new DynamicLogoutSuccessHandler();
+        }
 
         @Bean
         @Order(0)
@@ -71,6 +76,7 @@ public class AuthorizationServerSecurityConfig {
                                 .with(authorizationServerConfigurer,
                                                 (authorizationServer) -> authorizationServer
                                                                 .oidc(Customizer.withDefaults()))
+                                .cors(Customizer.withDefaults())
                                 .authorizeHttpRequests((authorize) -> authorize
                                                 .anyRequest().authenticated())
                                 .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
@@ -83,7 +89,9 @@ public class AuthorizationServerSecurityConfig {
         @Order(2)
         public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
                 http
-                                .securityMatcher("/api/v1/client/**", "/api/v1/user/**", "/api/v1/role/**", "/api/v1/permission/**")
+                                .securityMatcher("/api/v1/client/**", "/api/v1/user/**", "/api/v1/role/**",
+                                                "/api/v1/permission/**")
+                                .cors(Customizer.withDefaults())
                                 .authorizeHttpRequests(authorize -> authorize
                                                 .anyRequest().authenticated())
                                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
@@ -100,6 +108,7 @@ public class AuthorizationServerSecurityConfig {
                                                 .requestMatchers(
                                                                 "/login",
                                                                 "/register",
+                                                                "/exit",
                                                                 "/error",
                                                                 "/main.css",
                                                                 "/assets/**",
@@ -113,7 +122,10 @@ public class AuthorizationServerSecurityConfig {
                                                 .permitAll())
                                 .oauth2Login(oauth2 -> oauth2
                                                 .loginPage("/login")
-                                                .successHandler(oAuth2LoginSuccessHandler));
+                                                .successHandler(oAuth2LoginSuccessHandler))
+                                .logout(logout -> logout
+                                                .logoutSuccessHandler(dynamicLogoutSuccessHandler())
+                                                .permitAll());
                 return http.build();
         }
 
@@ -121,7 +133,7 @@ public class AuthorizationServerSecurityConfig {
         public JwtAuthenticationConverter jwtAuthenticationConverter() {
                 JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
                 grantedAuthoritiesConverter.setAuthorityPrefix("");
-                grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+                grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
 
                 JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
                 jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
@@ -130,8 +142,8 @@ public class AuthorizationServerSecurityConfig {
 
         @Bean
         public AuthorizationServerSettings authorizationServerSettings() {
-                String baseUrl = host + ":" + port;
-                return AuthorizationServerSettings.builder().issuer(baseUrl).build();
+                String oauthServerUrl = baseUrl + ":" + port;
+                return AuthorizationServerSettings.builder().issuer(oauthServerUrl).build();
         }
 
 }

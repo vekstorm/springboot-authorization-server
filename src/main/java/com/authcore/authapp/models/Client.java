@@ -99,7 +99,9 @@ public class Client {
                 .clientSettings(ClientSettings.builder()
                         .requireProofKey(client.isRequireProofKey())
                         .build())
-                .tokenSettings(TokenSettings.builder().build());
+                .tokenSettings(TokenSettings.builder()
+                        .reuseRefreshTokens(false)
+                        .build());
 
         return builder.build();
     }

@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
@@ -36,7 +38,7 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
     private Client clientFromDto(ClientCreateDto clientDto) {
         return Client.builder()
                 .clientId(clientDto.getClientId())
-                .clientSecret(passwordEncoder.encode(clientDto.getClientSecret()))
+                .clientSecret(clientDto.getClientSecret() != null ? passwordEncoder.encode(clientDto.getClientSecret()) : null)
                 .clientName(clientDto.getClientName())
                 .clientIdIssuedAt(Instant.now())
                 .authorizationGrantTypes(
@@ -52,7 +54,40 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
 
     @Override
     public void save(RegisteredClient registeredClient) {
-        log.warn("save(RegisteredClient) not implemented");
+        Client client = clientRepository.findById(UUID.fromString(registeredClient.getId()))
+                .orElse(null);
+        if (client == null) {
+            client = clientRepository.findByClientId(registeredClient.getClientId())
+                    .orElse(null);
+        }
+        if (client == null) {
+            client = Client.builder()
+                    .clientId(registeredClient.getClientId())
+                    .clientIdIssuedAt(registeredClient.getClientIdIssuedAt() != null
+                            ? registeredClient.getClientIdIssuedAt() : Instant.now())
+                    .build();
+        }
+        client.setClientSecret(registeredClient.getClientSecret());
+        client.setClientSecretExpiresAt(registeredClient.getClientSecretExpiresAt());
+        client.setClientName(registeredClient.getClientName());
+        if (registeredClient.getClientAuthenticationMethods() != null) {
+            client.setAuthenticationMethods(registeredClient.getClientAuthenticationMethods());
+        }
+        if (registeredClient.getAuthorizationGrantTypes() != null) {
+            client.setAuthorizationGrantTypes(registeredClient.getAuthorizationGrantTypes());
+        }
+        if (registeredClient.getRedirectUris() != null) {
+            client.setRedirectUris(registeredClient.getRedirectUris());
+        }
+        if (registeredClient.getPostLogoutRedirectUris() != null) {
+            client.setPostLogoutRedirectUris(registeredClient.getPostLogoutRedirectUris());
+        }
+        if (registeredClient.getScopes() != null) {
+            client.setScopes(registeredClient.getScopes());
+        }
+        client.setRequireProofKey(registeredClient.getClientSettings() != null
+                && registeredClient.getClientSettings().isRequireProofKey());
+        clientRepository.save(client);
     }
 
     @Override
@@ -86,7 +121,10 @@ public class ClientServiceImpl implements ClientService, RegisteredClientReposit
         log.debug("Finding client by clientId: {}", clientId);
         Client client = clientRepository.findByClientId(clientId)
                 .orElseThrow(() -> new RuntimeException("Client not found with clientId: " + clientId));
-        return Client.toRegisteredClient(client);
+        RegisteredClient rc = Client.toRegisteredClient(client);
+        log.warn(">>> grants para {}: {}", clientId, rc.getAuthorizationGrantTypes());
+        log.warn(">>> tokenSettings: {}", rc.getTokenSettings().getSettings());
+        return rc;
     }
 
     @Override

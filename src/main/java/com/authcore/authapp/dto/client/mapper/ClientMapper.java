@@ -39,6 +39,7 @@ public class ClientMapper {
             ClientResponseDto dto = new ClientResponseDto();
             dto.setId(client.getId().toString());
             dto.setClientId(client.getClientId());
+            dto.setClientSecret(client.getClientSecret());
             dto.setClientName(client.getClientName());
             dto.setAuthenticationMethods(client.getAuthenticationMethods().stream()
                     .map(ClientAuthenticationMethod::getValue).collect(java.util.stream.Collectors.toSet()));

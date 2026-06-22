@@ -1,6 +1,5 @@
 package com.authcore.authapp.models;
 
-import com.authcore.authapp.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,7 +40,7 @@ public class Role implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
-        return "ROLE_" + name;
+        return name.startsWith("ROLE_") ? name : "ROLE_" + name;
     }
 
     @Column(nullable = false)
