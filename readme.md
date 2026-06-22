@@ -1,151 +1,194 @@
+# Authorization Server — Vekstorm OAuth2 / OpenID Connect
 
-# Conceptos
+Servidor de autorización y autenticación basado en **Spring Authorization Server 7.0.4** con **Spring Boot 4.1** (Java 21). Gestiona el ciclo completo de OAuth2 y OpenID Connect, almacenando clientes, usuarios, roles y permisos en PostgreSQL.
 
-OAuth2 --> Es un proceso de autorización
+## Propósito
 
-OpenId --> Proceso de autenticación
+Proveer un **Authorization Server** administrable en tiempo real. Los clientes OAuth2 se almacenan en base de datos y pueden crearse, modificarse o eliminarse sin necesidad de redesplegar la aplicación. Soporta múltiples grant types, PKCE, refresh tokens, autenticación con Google OAuth2 y un panel de administración vía API REST.
 
-OpenIdConnect --> Engloba a ambos (autorización y autenticación)
+## Stack tecnológico
 
-# Definición de un puerto de arranque personalizado 
+| Componente | Tecnología |
+|---|---|
+| Framework | Spring Boot 4.1 (Spring Boot 3.x lineage) |
+| Authorization Server | `spring-security-oauth2-authorization-server` 7.0.4 |
+| Lenguaje | Java 21 |
+| Base de datos | PostgreSQL (Neon.tech) |
+| ORM | Spring Data JPA + Hibernate |
+| Frontend (login/admin) | Thymeleaf + CSS |
+| API Docs | Swagger (springdoc-openapi) 3.0.0 |
+| Build | Maven |
+| Lombok | Anotaciones para reducir boilerplate |
 
-En el fichero (application.properties):
+## Configuración (`application.yml`)
 
-    server.port= 9000
+### Conexión a BD
 
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://<host>:5432/<db>?createDatabaseIfNotExist=true
+    username: <user>
+    password: <pass>
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+```
 
-# Endpoints de SpringSecurity
+### Puertos y URLs
 
-Una vez configurado y arrancado el servidor:
+```yaml
+server:
+  port: 9000
+base:
+  url: http://localhost
+```
 
-http://localhost:9000/.well-known/oauth-authorization-server
+El **issuer** se construye automáticamente como `{base.url}:{server.port}` → `http://localhost:9000`.
 
-    {
-        "issuer": "http://localhost:9000",
-        "authorization_endpoint": "http://localhost:9000/oauth2/authorize",
-        "device_authorization_endpoint": "http://localhost:9000/oauth2/device_authorization",
-        "token_endpoint": "http://localhost:9000/oauth2/token",
-        "token_endpoint_auth_methods_supported": [
-            "client_secret_basic",
-            "client_secret_post",
-            "client_secret_jwt",
-            "private_key_jwt",
-            "tls_client_auth",
-            "self_signed_tls_client_auth"
-        ],
-        "jwks_uri": "http://localhost:9000/oauth2/jwks",
-        "response_types_supported": [
-            "code"
-        ],
-        "grant_types_supported": [
-            "authorization_code",
-            "client_credentials",
-            "refresh_token",
-            "urn:ietf:params:oauth:grant-type:device_code",
-            "urn:ietf:params:oauth:grant-type:token-exchange"
-        ],
-        "revocation_endpoint": "http://localhost:9000/oauth2/revoke",
-        "revocation_endpoint_auth_methods_supported": [
-            "client_secret_basic",
-            "client_secret_post",
-            "client_secret_jwt",
-            "private_key_jwt",
-            "tls_client_auth",
-            "self_signed_tls_client_auth"
-        ],
-        "introspection_endpoint": "http://localhost:9000/oauth2/introspect",
-        "introspection_endpoint_auth_methods_supported": [
-            "client_secret_basic",
-            "client_secret_post",
-            "client_secret_jwt",
-            "private_key_jwt",
-            "tls_client_auth",
-            "self_signed_tls_client_auth"
-        ],
-        "code_challenge_methods_supported": [
-            "S256"
-        ],
-        "tls_client_certificate_bound_access_tokens": true,
-        "dpop_signing_alg_values_supported": [
-            "RS256",
-            "RS384",
-            "RS512",
-            "PS256",
-            "PS384",
-            "PS512",
-            "ES256",
-            "ES384",
-            "ES512"
-        ]
-    }
+### Valores por defecto (DataInitializer)
 
-# Conexión a base de datos PostgreSQL
+Al arrancar, se crean automáticamente (si no existen):
 
-* Dependencia:
+| Tipo | ID | Credenciales |
+|---|---|---|
+| Usuario admin | `admin@email.com` | `admin123` / Rol: `ROLE_ADMIN` |
+| Usuario regular | `user@email.com` | `user123` / Rol: `ROLE_USER` |
+| Cliente OIDC Debugger | `oidc-client` | secret: `secret` |
+| Cliente Swagger UI | `swagger-ui` | sin secret (público, PKCE) |
+| Cliente Identity App | `identity-client` | secret: `identity-secret` |
 
+## Clientes registrados
 
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>YOUR_VERSION</version>
-    </dependency>
+### identity-client (confidencial)
 
+- **Tipo**: Confidencial (`client_secret_basic`)
+- **Secret**: `identity-secret` (almacenado como BCrypt hash)
+- **Grant types**: `authorization_code`, `refresh_token`
+- **PKCE**: `requireProofKey: true`
+- **Redirect URIs**: `http://localhost:4200/authorized`
+- **Post-logout Redirect URIs**: `http://localhost:4200/`
+- **Scopes**: `openid`, `profile`, `offline_access`
 
-* Propiedades de conexión a BD PostgresSQL
+Requiere Basic Auth en `/oauth2/token` con credenciales `identity-client:identity-secret`.
 
+### oidc-client (público)
 
-    spring.datasource.url=jdbc:postgresql://<DB_URL>:<DB_PORT>/<DB_NAME>?createDatabaseIfNotExist=true
-    spring.datasource.username=<DB_USERNAME>
-    spring.datasource.password=<DB_PASS>
-    
-    spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-    
-    spring.jpa.defer-datasource-inizialization=true
-    spring.jpa.hibernate.ddl-auto=false
-    spring.jpa.generate-ddl=false
-    spring.jpa.show-sql=true
-    spring.jpa.properties.hibernate.format_sql=true
+- **Tipo**: Público
+- **Grant types**: `authorization_code`, `refresh_token`
+- **Redirect URI**: `https://oauthdebugger.com/debug`
+- **Scope**: `openid`
+- Para depuración con OAuth Debugger.
 
+### swagger-ui (público)
 
-# Validaciones
+- **Tipo**: Público con PKCE
+- **Redirect URI**: `http://localhost:9000/swagger-ui/oauth2-redirect.html`
+- **Scope**: `openid`
 
-Las validaciones deben incluirse tanto en la creación de la entidad para que la base de datos se configure con las restricciones adecuadas, como en los DTO's que usaremos en los controladores a la hora de aportar objetos de entrada en el cuerpo de la petición. 
+## Security Filter Chains
 
-Para la entidad usaremos las validaciones propias de jakarta especificándolas dentro de @Column. Esto se incluye al importar las dependencias requeridas para la gestión de la base de datos:
+El proyecto define 4 cadenas de filtros ordenadas por prioridad:
 
-    import jakarta.persistence.*;
+### `@Order(0)` — Swagger
+Rutas de Swagger/API docs (público, sin seguridad).
 
-Ejemplo de uso 
+### `@Order(1)` — Authorization Server
+Endpoints OAuth2 (`/oauth2/*`, `/oauth2/oidc/*`). Requiere autenticación. Redirige a `/login` si no está autenticado.
 
-    @Column(name = "username", unique = true, length = 50, nullable = false)
+### `@Order(2)` — API REST
+Rutas `/api/v1/client/**`, `/api/v1/user/**`, `/api/v1/role/**`, `/api/v1/permission/**`. Autenticación vía JWT Bearer token.
 
-Para usar en el DTO las anotaciones de validación de Hibernate Validator (@NotNull, @Size, @Email, etc.) incluiremos una dependencia:
+### `@Order(3)` — Web (Login/Logout)
+Páginas públicas: `/login`, `/register`, `/exit`, `/error`, `/main.css`, `/assets/**`, `/.well-known/**`.
+Formulario de login con soporte para OAuth2 Google. Logout con `DynamicLogoutSuccessHandler`.
 
-    <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-validation</artifactId>
-    </dependency>
+## Endpoints OAuth2 / OIDC
 
-Ejemplo de uso:
+| Endpoint | Descripción |
+|---|---|
+| `GET /.well-known/oauth-authorization-server` | Metadata del servidor |
+| `GET /oauth2/authorize` | Authorization endpoint (login + consent) |
+| `POST /oauth2/token` | Token endpoint (código, refresh, client credentials) |
+| `GET /oauth2/jwks` | Claves públicas JWKS |
+| `POST /oauth2/revoke` | Revocación de tokens |
+| `POST /oauth2/introspect` | Introspección de tokens |
+| `GET /oauth2/oidc/logout` | RP-initiated logout (OIDC end_session_endpoint) |
+| `GET /oauth2/oidc/userinfo` | UserInfo endpoint |
 
-    @NotBlank(message = "username is required")
-    @Size(min = 1, max = 50)
-    String username;
+## Flujo de logout
 
-    @NotBlank
-    @Size(min = 1, max = 100)
-    String password;
+### Desde el cliente Angular (RP-initiated logout)
 
-    @NotBlank
-    @Email(message = "Must use a valid email")
-    String email;
+El cliente redirige al **OIDC end_session_endpoint** (`/oauth2/oidc/logout`) con el `post_logout_redirect_uri` registrado. Spring AS valida contra los `postLogoutRedirectUris` del cliente y redirige al cliente.
 
-Para más tipos de validación en función de los tipos de datos a usar https://hibernate.org/validator/
+### Desde el cliente vía `/exit`
 
+El cliente Angular llama a:
 
-https://oauthdebugger.com/
+```
+GET /exit?client_id=identity-client
+```
+
+El servidor busca en BD el cliente, obtiene su primer `postLogoutRedirectUri` y redirige allí. Si no se especifica `client_id` o el cliente no tiene post-logout URIs configurados, redirige a `/login?logout`.
+
+### Desde el propio servidor (Spring Security `/logout`)
+
+El formulario POST `/logout` del `success.html` ejecuta el `DynamicLogoutSuccessHandler`. Si la cabecera `Origin` o `Referer` pertenece a un origen permitido (`ALLOWED_ORIGINS`), redirige a ese origen. En caso contrario, redirige a `/login?logout`.
+
+## Refresh tokens
+
+- Configurados con `reuseRefreshTokens(false)` — cada vez que se refresca un token, se emite uno nuevo y se invalida el anterior.
+- Solo se emiten si el request de autorización incluye `scope=offline_access`.
+- identity-client está configurado como confidencial con `client_secret_basic`, requisito de Spring AS para emitir refresh tokens.
+
+## API REST de administración
+
+Endpoints protegidos con JWT. Roles requeridos: `ROLE_ADMIN` o `ROLE_USER` con permisos específicos.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/v1/client` | Listar clientes (paginado) |
+| POST | `/api/v1/client` | Crear cliente |
+| PUT | `/api/v1/client` | Actualizar cliente |
+| DELETE | `/api/v1/client?clientId={id}` | Eliminar cliente |
+| GET | `/api/v1/user` | Listar usuarios (paginado) |
+| POST | `/api/v1/user` | Crear usuario |
+| PUT | `/api/v1/user` | Actualizar usuario |
+| DELETE | `/api/v1/user?userId={id}` | Eliminar usuario |
+| GET | `/api/v1/role` | Listar roles |
+| GET | `/api/v1/permission` | Listar permisos |
+
+Documentación interactiva disponible en: `http://localhost:9000/swagger-ui.html`
+
+## Probar el flujo completo
+
+### Con OAuth Debugger
+
+1. Abrir [https://oauthdebugger.com/](https://oauthdebugger.com/)
+2. Configurar:
+   - **Authorization URL**: `http://localhost:9000/oauth2/authorize`
+   - **Token URL**: `http://localhost:9000/oauth2/token`
+   - **Client ID**: `oidc-client`
+   - **Client Secret**: (vacío — cliente público)
+   - **Scope**: `openid`
+   - **Redirect URI**: `https://oauthdebugger.com/debug`
+   - **Grant Type**: `Authorization Code (PKCE)`
+3. Iniciar sesión con `user@email.com` / `user123`
+
+### Con el cliente Angular
+
+1. Navegar a `http://localhost:4200/`
+2. Iniciar sesión → redirige a `http://localhost:9000/login` → tras autenticación, redirige de vuelta al cliente con el `authorization_code`
+3. El cliente canjea el código por tokens en `POST /oauth2/token` (con Basic Auth)
+4. El cliente puede refrescar el token usando `POST /oauth2/token` con `grant_type=refresh_token`
+
+## Ejecución
+
+```bash
+cd authorization-server
+./mvnw spring-boot:run
+```
+
+Requiere Java 21 y conexión a PostgreSQL.
