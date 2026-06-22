@@ -15,6 +15,8 @@ import java.util.UUID;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, UUID> {
 
+    boolean existsByPermissionsId(UUID permissionId);
+
     Optional<Role> findByName(String name);
 
     List<Role> findByActiveTrue();

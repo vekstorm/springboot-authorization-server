@@ -7,6 +7,7 @@ import com.authcore.authapp.dto.role.RoleUpdateDto;
 import com.authcore.authapp.dto.role.mapper.RoleMapper;
 import com.authcore.authapp.models.Permission;
 import com.authcore.authapp.models.Role;
+import com.authcore.authapp.repository.AppUserRepository;
 import com.authcore.authapp.repository.PermissionRepository;
 import com.authcore.authapp.repository.RoleRepository;
 import jakarta.transaction.Transactional;
@@ -29,6 +30,7 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+    private final AppUserRepository appUserRepository;
     private final RoleMapper roleMapper;
 
     @Override
@@ -107,6 +109,12 @@ public class RoleServiceImpl implements RoleService {
         try {
             Role role = roleRepository.findById(UUID.fromString(id))
                     .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+
+            if (appUserRepository.existsByRolesId(role.getId())) {
+                return new AppResponseDto(HttpStatus.CONFLICT,
+                        "Cannot delete role [" + role.getName() + "] because it is assigned to one or more users");
+            }
+
             roleRepository.delete(role);
             log.info("Role [{}] deleted successfully", role.getName());
             return new AppResponseDto(HttpStatus.OK, "Role [" + role.getName() + "] deleted successfully");

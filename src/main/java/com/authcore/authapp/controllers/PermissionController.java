@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/permission")
 @RequiredArgsConstructor
@@ -88,10 +90,33 @@ public class PermissionController {
         log.info("Received request to delete permission with id: {}", id);
         try {
             AppResponseDto response = permissionService.deletePermission(id);
+            HttpStatus status = response.getStatus();
+            if (status == HttpStatus.CONFLICT) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
             log.info("Permission deleted successfully with id: {}", id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error deleting permission with id: {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AppResponseDto(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/batch")
+    @PreAuthorize("hasAuthority('permission:delete')")
+    public ResponseEntity<AppResponseDto> deleteBatch(@RequestBody List<String> ids) {
+        log.info("Received request to batch delete {} permissions", ids.size());
+        try {
+            AppResponseDto response = permissionService.deletePermissions(ids);
+            HttpStatus status = response.getStatus();
+            if (status == HttpStatus.CONFLICT) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
+            log.info("Batch delete result: {}", response.getMessage());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error batch deleting permissions", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new AppResponseDto(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
         }

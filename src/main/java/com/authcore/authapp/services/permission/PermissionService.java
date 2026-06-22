@@ -7,6 +7,8 @@ import com.authcore.authapp.dto.permission.PermissionUpdateDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface PermissionService {
 
     AppResponseDto createPermission(PermissionCreateDto dto);
@@ -18,4 +20,6 @@ public interface PermissionService {
     AppResponseDto updatePermission(PermissionUpdateDto dto);
 
     AppResponseDto deletePermission(String id);
+
+    AppResponseDto deletePermissions(List<String> ids);
 }

@@ -7,6 +7,7 @@ import com.authcore.authapp.dto.permission.PermissionUpdateDto;
 import com.authcore.authapp.dto.permission.mapper.PermissionMapper;
 import com.authcore.authapp.models.Permission;
 import com.authcore.authapp.repository.PermissionRepository;
+import com.authcore.authapp.repository.RoleRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ import java.util.UUID;
 public class PermissionServiceImpl implements PermissionService {
 
     private final PermissionRepository permissionRepository;
+    private final RoleRepository roleRepository;
     private final PermissionMapper permissionMapper;
 
     @Override
@@ -96,12 +99,44 @@ public class PermissionServiceImpl implements PermissionService {
         try {
             Permission permission = permissionRepository.findById(UUID.fromString(id))
                     .orElseThrow(() -> new RuntimeException("Permission not found with id: " + id));
+
+            if (roleRepository.existsByPermissionsId(permission.getId())) {
+                return new AppResponseDto(HttpStatus.CONFLICT,
+                        "Cannot delete permission [" + permission.getName() + "] because it is assigned to one or more roles");
+            }
+
             permissionRepository.delete(permission);
             log.info("Permission [{}] deleted successfully", permission.getName());
             return new AppResponseDto(HttpStatus.OK, "Permission [" + permission.getName() + "] deleted successfully");
         } catch (Exception e) {
             log.error("Error deleting permission", e);
             throw new RuntimeException("Error deleting permission: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public AppResponseDto deletePermissions(List<String> ids) {
+        try {
+            List<Permission> permissions = permissionRepository.findAllById(
+                    ids.stream().map(UUID::fromString).toList());
+
+            List<String> assigned = permissions.stream()
+                    .filter(p -> roleRepository.existsByPermissionsId(p.getId()))
+                    .map(Permission::getName)
+                    .toList();
+
+            if (!assigned.isEmpty()) {
+                return new AppResponseDto(HttpStatus.CONFLICT,
+                        "Cannot delete permissions assigned to roles: " + String.join(", ", assigned));
+            }
+
+            permissionRepository.deleteAll(permissions);
+            log.info("Batch deleted {} permissions", permissions.size());
+            return new AppResponseDto(HttpStatus.OK,
+                    permissions.size() + " permissions deleted successfully");
+        } catch (Exception e) {
+            log.error("Error batch deleting permissions", e);
+            throw new RuntimeException("Error batch deleting permissions: " + e.getMessage(), e);
         }
     }
 }

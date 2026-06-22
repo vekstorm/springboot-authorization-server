@@ -14,8 +14,10 @@ public class CorsConfiguration {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-        configuration.addAllowedOrigin(host + ":9000/"); // Change to specific domains in production TODO
+        configuration.addAllowedOrigin(host + ":9000/");
+        configuration.addAllowedOrigin("http://192.168.1.41:9000/"); // Change to specific domains in production TODO
         configuration.addAllowedOrigin("http://localhost:4200/"); // Change to specific domains in production TODO
+        configuration.addAllowedOrigin("http://192.168.1.41:4200/"); // Change to specific domains in production TODO
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);

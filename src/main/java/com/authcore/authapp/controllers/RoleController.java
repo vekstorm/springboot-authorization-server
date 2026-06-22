@@ -88,6 +88,10 @@ public class RoleController {
         log.info("Received request to delete role with id: {}", id);
         try {
             AppResponseDto response = roleService.deleteRole(id);
+            HttpStatus status = response.getStatus();
+            if (status == HttpStatus.CONFLICT) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
             log.info("Role deleted successfully with id: {}", id);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
