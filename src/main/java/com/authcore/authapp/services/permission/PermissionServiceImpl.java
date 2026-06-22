@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -102,6 +103,21 @@ public class PermissionServiceImpl implements PermissionService {
         } catch (Exception e) {
             log.error("Error deleting permission", e);
             throw new RuntimeException("Error deleting permission: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public AppResponseDto deletePermissions(List<String> ids) {
+        try {
+            List<Permission> permissions = permissionRepository.findAllById(
+                    ids.stream().map(UUID::fromString).toList());
+            permissionRepository.deleteAll(permissions);
+            log.info("Batch deleted {} permissions", permissions.size());
+            return new AppResponseDto(HttpStatus.OK,
+                    permissions.size() + " permissions deleted successfully");
+        } catch (Exception e) {
+            log.error("Error batch deleting permissions", e);
+            throw new RuntimeException("Error batch deleting permissions: " + e.getMessage(), e);
         }
     }
 }

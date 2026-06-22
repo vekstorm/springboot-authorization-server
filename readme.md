@@ -42,10 +42,10 @@ spring:
 server:
   port: 9000
 base:
-  url: http://localhost
+  url: http://192.168.1.41
 ```
 
-El **issuer** se construye automáticamente como `{base.url}:{server.port}` → `http://localhost:9000`.
+El **issuer** se construye automáticamente como `{base.url}:{server.port}` → `http://192.168.1.41:9000`.
 
 ### Valores por defecto (DataInitializer)
 
@@ -67,8 +67,8 @@ Al arrancar, se crean automáticamente (si no existen):
 - **Secret**: `identity-secret` (almacenado como BCrypt hash)
 - **Grant types**: `authorization_code`, `refresh_token`
 - **PKCE**: `requireProofKey: true`
-- **Redirect URIs**: `http://localhost:4200/authorized`
-- **Post-logout Redirect URIs**: `http://localhost:4200/`
+- **Redirect URIs**: `http://192.168.1.41:4200/authorized`
+- **Post-logout Redirect URIs**: `http://192.168.1.41:4200/`
 - **Scopes**: `openid`, `profile`, `offline_access`
 
 Requiere Basic Auth en `/oauth2/token` con credenciales `identity-client:identity-secret`.
@@ -84,7 +84,7 @@ Requiere Basic Auth en `/oauth2/token` con credenciales `identity-client:identit
 ### swagger-ui (público)
 
 - **Tipo**: Público con PKCE
-- **Redirect URI**: `http://localhost:9000/swagger-ui/oauth2-redirect.html`
+- **Redirect URI**: `http://192.168.1.41:9000/swagger-ui/oauth2-redirect.html`
 - **Scope**: `openid`
 
 ## Security Filter Chains
@@ -160,7 +160,7 @@ Endpoints protegidos con JWT. Roles requeridos: `ROLE_ADMIN` o `ROLE_USER` con p
 | GET | `/api/v1/role` | Listar roles |
 | GET | `/api/v1/permission` | Listar permisos |
 
-Documentación interactiva disponible en: `http://localhost:9000/swagger-ui.html`
+Documentación interactiva disponible en: `http://192.168.1.41:9000/swagger-ui.html`
 
 ## Probar el flujo completo
 
@@ -168,8 +168,8 @@ Documentación interactiva disponible en: `http://localhost:9000/swagger-ui.html
 
 1. Abrir [https://oauthdebugger.com/](https://oauthdebugger.com/)
 2. Configurar:
-   - **Authorization URL**: `http://localhost:9000/oauth2/authorize`
-   - **Token URL**: `http://localhost:9000/oauth2/token`
+   - **Authorization URL**: `http://192.168.1.41:9000/oauth2/authorize`
+   - **Token URL**: `http://192.168.1.41:9000/oauth2/token`
    - **Client ID**: `oidc-client`
    - **Client Secret**: (vacío — cliente público)
    - **Scope**: `openid`
@@ -179,8 +179,8 @@ Documentación interactiva disponible en: `http://localhost:9000/swagger-ui.html
 
 ### Con el cliente Angular
 
-1. Navegar a `http://localhost:4200/`
-2. Iniciar sesión → redirige a `http://localhost:9000/login` → tras autenticación, redirige de vuelta al cliente con el `authorization_code`
+1. Navegar a `http://192.168.1.41:4200/`
+2. Iniciar sesión → redirige a `http://192.168.1.41:9000/login` → tras autenticación, redirige de vuelta al cliente con el `authorization_code`
 3. El cliente canjea el código por tokens en `POST /oauth2/token` (con Basic Auth)
 4. El cliente puede refrescar el token usando `POST /oauth2/token` con `grant_type=refresh_token`
 
