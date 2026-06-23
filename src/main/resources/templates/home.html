@@ -613,7 +613,7 @@
                     return '<span class="scope">' + m + '</span>';
                 });
                 var redirectUris = (client.redirectUris || []).map(function (uri) {
-                    return '<a href="' + uri.replace(/"/g, '&quot;') + '" target="_blank">' + uri.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</a>';
+                    return '<span class="redirect-uri">' + uri.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
                 });
                 var escaped = JSON.stringify(client).replace(/'/g, "&#39;");
                 row.innerHTML =

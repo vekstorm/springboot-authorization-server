@@ -522,6 +522,18 @@ body {
     border-radius:4px;
 }
 
+.redirect-uri {
+    display:inline-block;
+    padding:2px 8px;
+    margin:2px 4px 2px 0;
+    font-size:0.7rem;
+    color:#6cf;
+    background:#000;
+    border:1px solid #1a3340;
+    border-radius:4px;
+    word-break:break-all;
+}
+
 .clients-table td a {
     color:#ccc;
     text-decoration:none;
