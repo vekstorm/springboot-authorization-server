@@ -18,6 +18,8 @@ public class CorsConfiguration {
         configuration.addAllowedOrigin("http://192.168.1.41:9000/"); // Change to specific domains in production TODO
         configuration.addAllowedOrigin("http://localhost:4200/"); // Change to specific domains in production TODO
         configuration.addAllowedOrigin("http://192.168.1.41:4200/"); // Change to specific domains in production TODO
+        configuration.addAllowedOrigin("http://localhost:4201/"); // Change to specific domains in production TODO
+        configuration.addAllowedOrigin("http://192.168.1.41:4201/"); // Change to specific domains in production TODO
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
