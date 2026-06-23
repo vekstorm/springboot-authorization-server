@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/permission")
+@RequestMapping(value = "/api/v1/permission", produces = "application/json")
 @RequiredArgsConstructor
 @Slf4j
 public class PermissionController {

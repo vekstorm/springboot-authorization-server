@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/api/v1/client")
+@RequestMapping(value = "/api/v1/client", produces = "application/json")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
