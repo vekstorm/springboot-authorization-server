@@ -28,9 +28,9 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
 ### VS Code ###
 .vscode/
 
-/src/main/resources/application.properties
-/src/main/resources/application.yml
+# Local overrides (para pruebas sin config-server)
+application-local.yml
+application-local.properties

@@ -157,7 +157,9 @@ public class DataInitializer implements CommandLineRunner {
                 client.setAuthorizationGrantTypes(new HashSet<>(Set.of(
                                 new AuthorizationGrantType("authorization_code"))));
                 client.setRedirectUris(new HashSet<>(Set.of(
-                                "http://localhost:9000/swagger-ui/oauth2-redirect.html")));
+                                "http://localhost:9000/swagger-ui/oauth2-redirect.html",
+                                "http://localhost:8082/swagger-ui/oauth2-redirect.html",
+                                "http://localhost:8083/swagger-ui/oauth2-redirect.html")));
                 client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
                 client.setScopes(new HashSet<>(Set.of(
                                 "openid", "profile",
@@ -213,7 +215,13 @@ public class DataInitializer implements CommandLineRunner {
                 permissions.add(createPermissionIfNotExists("role:delete", "Delete roles"));
                 permissions.add(createPermissionIfNotExists("permission:read", "View permissions"));
                 permissions.add(createPermissionIfNotExists("permission:write", "Create and update permissions"));
-                permissions.add(createPermissionIfNotExists("permission:delete", "Delete permissions"));
+				permissions.add(createPermissionIfNotExists("permission:delete", "Delete permissions"));
+				permissions.add(createPermissionIfNotExists("device:read", "View devices"));
+				permissions.add(createPermissionIfNotExists("device:write", "Create and update devices"));
+				permissions.add(createPermissionIfNotExists("device:delete", "Delete devices"));
+				permissions.add(createPermissionIfNotExists("scenario:read", "View scenarios"));
+				permissions.add(createPermissionIfNotExists("scenario:write", "Create and update scenarios"));
+				permissions.add(createPermissionIfNotExists("scenario:delete", "Delete scenarios"));
                 return permissions;
         }
 
