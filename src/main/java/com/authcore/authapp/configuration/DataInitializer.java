@@ -72,6 +72,12 @@ public class DataInitializer implements CommandLineRunner {
         @Value("${defaults.redirect-uri}")
         private String defaultRedirectUri;
 
+        @Value("${frontend.main-url}")
+        private String mainAppUrl;
+
+        @Value("${frontend.identity-url}")
+        private String identityAppUrl;
+
         @Value("${defaults.client-credentials-grant-type}")
         private String clientCredentialsGrantType;
 
@@ -208,10 +214,8 @@ public class DataInitializer implements CommandLineRunner {
                                 new AuthorizationGrantType("authorization_code"),
                                 new AuthorizationGrantType("refresh_token"))));
                 client.setRedirectUris(new HashSet<>(Set.of(
-                                "http://localhost:4200",
-                                "http://localhost:4200/",
-                                "http://192.168.1.19:4200",
-                                "http://192.168.1.19:4200/")));
+                                identityAppUrl,
+                                identityAppUrl + "/")));
                 client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
                 client.setScopes(new HashSet<>(Set.of("openid", "profile", "offline_access")));
                 client.setRequireProofKey(true);
@@ -332,10 +336,8 @@ public class DataInitializer implements CommandLineRunner {
                                 new AuthorizationGrantType("authorization_code"),
                                 new AuthorizationGrantType("refresh_token"))));
                 client.setRedirectUris(new HashSet<>(Set.of(
-                                "http://localhost:4201",
-                                "http://localhost:4201/",
-                                "http://192.168.1.19:4201",
-                                "http://192.168.1.19:4201/")));
+                                mainAppUrl,
+                                mainAppUrl + "/")));
                 client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
                 client.setScopes(new HashSet<>(Set.of("openid", "profile", "offline_access")));
                 client.setRequireProofKey(true);

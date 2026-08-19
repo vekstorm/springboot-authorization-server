@@ -22,6 +22,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
+import java.util.Set;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -32,12 +34,15 @@ public class AuthorizationServerSecurityConfig {
         @Value("${base.url}")
         private String baseUrl;
 
+        @Value("${frontend.allowed-origins}")
+        private Set<String> allowedOrigins;
+
         private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
         private final FormLoginSuccessHandler formLoginSuccessHandler;
 
         @Bean
         public DynamicLogoutSuccessHandler dynamicLogoutSuccessHandler() {
-                return new DynamicLogoutSuccessHandler();
+                return new DynamicLogoutSuccessHandler(allowedOrigins);
         }
 
         @Bean

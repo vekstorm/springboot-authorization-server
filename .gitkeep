@@ -1,0 +1,6 @@
+# Servicio: authorization-server
+# Repo:    https://github.com/vekstorm/springboot-authorization-server.git
+# Rama:    development
+#
+# Tras clonar el repo raíz, clonar aquí:
+#   git clone https://github.com/vekstorm/springboot-authorization-server.git authorization-server
