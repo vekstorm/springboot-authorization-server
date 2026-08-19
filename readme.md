@@ -499,7 +499,7 @@ El interceptor HTTP del frontend añade automáticamente el Bearer token del JWT
 | `clientSecret` | `identity-secret` (BCrypt hasheado) |
 | `authMethods` | `client_secret_basic`, `none` |
 | `grantTypes` | `authorization_code`, `refresh_token` |
-| `redirectUris` | `http://localhost:4200/`, `http://192.168.1.41:4200/` |
+| `redirectUris` | `http://localhost:4200/`, `http://192.168.1.19:4200/` |
 | `scopes` | `openid`, `profile`, `offline_access` |
 | `requireProofKey` | `true` |
 
@@ -666,7 +666,7 @@ Si los datos ya existen (detectado por email del admin), se salta la inicializac
 ## Notas técnicas
 
 - **Rotación de claves RSA**: Cada reinicio genera un nuevo par de claves. Todos los JWT emitidos antes del reinicio se invalidan. Para persistencia, se necesitaría un `KeyStore` en disco o un servicio externo.
-- **CORS**: Configurado para `localhost:4200/4201` y `192.168.1.41:4200/4201`. Para producción, añadir los orígenes necesarios en `CorsConfiguration.java`.
+- **CORS**: Configurado para `localhost:4200/4201` y `192.168.1.19:4200/4201`. Para producción, añadir los orígenes necesarios en `CorsConfiguration.java`.
 - **Logout**: El endpoint `GET /exit` permite logout con redirección dinámica a orígenes permitidos. Los clientes OAuth2 pueden configurar `postLogoutRedirectUris` para logout post-redirección.
 - **Swagger UI** está disponible en `/swagger-ui.html` sin autenticación, pero los endpoints requieren OAuth2 vía el cliente `swagger-ui`.
 - **La consola web** (`/`) requiere autoridad `client:read`. Los usuarios con rol `ROLE_USER` ven la página `/success` sin acceso a admin.

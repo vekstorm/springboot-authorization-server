@@ -32,9 +32,6 @@ public class AuthorizationServerSecurityConfig {
         @Value("${base.url}")
         private String baseUrl;
 
-        @Value("${server.port}")
-        private String port;
-
         private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
         private final FormLoginSuccessHandler formLoginSuccessHandler;
 
@@ -56,7 +53,8 @@ public class AuthorizationServerSecurityConfig {
                                                 "/api-docs/",
                                                 "/api-docs/**",
                                                 "/api-docs.yaml",
-                                                "/api-docs/swagger-config")
+                                                "/api-docs/swagger-config",
+                                                "/.well-known/**")
                                 .authorizeHttpRequests(authorize -> authorize
                                                 .anyRequest().permitAll())
                                 .csrf(AbstractHttpConfigurer::disable)
@@ -73,12 +71,12 @@ public class AuthorizationServerSecurityConfig {
                 OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
                 http
                                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                                .with(authorizationServerConfigurer,
+.with(authorizationServerConfigurer,
                                                 (authorizationServer) -> authorizationServer
                                                                 .oidc(Customizer.withDefaults()))
-                                .cors(Customizer.withDefaults())
-                                .authorizeHttpRequests((authorize) -> authorize
-                                                .anyRequest().authenticated())
+                                 .authorizeHttpRequests((authorize) -> authorize
+                                                 .requestMatchers("/oauth2/jwks").permitAll()
+                                                 .anyRequest().authenticated())
                                 .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
                                                 new LoginUrlAuthenticationEntryPoint("/login"),
                                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
@@ -91,7 +89,6 @@ public class AuthorizationServerSecurityConfig {
                 http
                                 .securityMatcher("/api/v1/client/**", "/api/v1/user/**", "/api/v1/role/**",
                                                 "/api/v1/permission/**")
-                                .cors(Customizer.withDefaults())
                                 .authorizeHttpRequests(authorize -> authorize
                                                 .anyRequest().authenticated())
                                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
@@ -142,8 +139,7 @@ public class AuthorizationServerSecurityConfig {
 
         @Bean
         public AuthorizationServerSettings authorizationServerSettings() {
-                String oauthServerUrl = baseUrl + ":" + port;
-                return AuthorizationServerSettings.builder().issuer(oauthServerUrl).build();
+                return AuthorizationServerSettings.builder().issuer(baseUrl).build();
         }
 
 }

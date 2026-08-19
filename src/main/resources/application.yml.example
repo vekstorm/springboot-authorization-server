@@ -45,7 +45,7 @@ server:
   port: 9000
 
 base:
-  url: http://192.168.1.41
+  url: http://192.168.1.19
 
 defaults:
   admin-role: ROLE_ADMIN

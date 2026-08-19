@@ -60,6 +60,12 @@ public class DataInitializer implements CommandLineRunner {
         @Value("${defaults.identity-client-secret}")
         private String identityClientSecret;
 
+        @Value("${defaults.gateway-client-secret}")
+        private String gatewayClientSecret;
+
+        @Value("${defaults.main-app-client-secret}")
+        private String mainAppClientSecret;
+
         @Value("${defaults.client-scope}")
         private String defaultClientScope;
 
@@ -87,20 +93,30 @@ public class DataInitializer implements CommandLineRunner {
                 seedOidcClient();
                 seedSwaggerClient();
                 seedIdentityClient();
+                seedGatewayClient();
+                seedMainAppClient();
+
+                List<Permission> allPermissions = createPermissions();
+
+                Role adminRole = createOrUpdateRole(adminRoleName, "Administrator role with full access", allPermissions);
+
+                List<Permission> readPermissions = allPermissions.stream()
+                                .filter(p -> p.getName().endsWith(":read") && !p.getName().startsWith("client"))
+                                .toList();
+                List<String> writeDeletePermissions = List.of(
+                                "scenario:write", "scenario:delete",
+                                "device:write", "device:delete",
+                                "subscription:write");
+                List<Permission> userPermissions = new ArrayList<>(readPermissions);
+                allPermissions.stream()
+                                .filter(p -> writeDeletePermissions.contains(p.getName()))
+                                .forEach(userPermissions::add);
+                Role userRole = createOrUpdateRole(userRoleName, "Standard user role with read/write access", userPermissions);
 
                 if (appUserRepository.findByEmail(adminEmail).isPresent()) {
                         log.info("Default users already exist. Skipping user initialization.");
                         return;
                 }
-
-                List<Permission> allPermissions = createPermissions();
-
-                Role adminRole = createRole(adminRoleName, "Administrator role with full access", allPermissions);
-
-                List<Permission> readPermissions = allPermissions.stream()
-                                .filter(p -> p.getName().endsWith(":read") && !p.getName().startsWith("client"))
-                                .toList();
-                Role userRole = createRole(userRoleName, "Standard user role with read-only access", readPermissions);
 
                 createUser("admin", adminEmail, adminPassword, "Admin", adminRole);
                 createUser("user", userEmail, userPassword, "User", userRole);
@@ -192,8 +208,10 @@ public class DataInitializer implements CommandLineRunner {
                                 new AuthorizationGrantType("authorization_code"),
                                 new AuthorizationGrantType("refresh_token"))));
                 client.setRedirectUris(new HashSet<>(Set.of(
+                                "http://localhost:4200",
                                 "http://localhost:4200/",
-                                "http://192.168.1.41:4200/")));
+                                "http://192.168.1.19:4200",
+                                "http://192.168.1.19:4200/")));
                 client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
                 client.setScopes(new HashSet<>(Set.of("openid", "profile", "offline_access")));
                 client.setRequireProofKey(true);
@@ -215,13 +233,16 @@ public class DataInitializer implements CommandLineRunner {
                 permissions.add(createPermissionIfNotExists("role:delete", "Delete roles"));
                 permissions.add(createPermissionIfNotExists("permission:read", "View permissions"));
                 permissions.add(createPermissionIfNotExists("permission:write", "Create and update permissions"));
-				permissions.add(createPermissionIfNotExists("permission:delete", "Delete permissions"));
-				permissions.add(createPermissionIfNotExists("device:read", "View devices"));
-				permissions.add(createPermissionIfNotExists("device:write", "Create and update devices"));
-				permissions.add(createPermissionIfNotExists("device:delete", "Delete devices"));
-				permissions.add(createPermissionIfNotExists("scenario:read", "View scenarios"));
-				permissions.add(createPermissionIfNotExists("scenario:write", "Create and update scenarios"));
-				permissions.add(createPermissionIfNotExists("scenario:delete", "Delete scenarios"));
+                permissions.add(createPermissionIfNotExists("permission:delete", "Delete permissions"));
+                permissions.add(createPermissionIfNotExists("device:read", "View devices"));
+                permissions.add(createPermissionIfNotExists("device:write", "Create and update devices"));
+                permissions.add(createPermissionIfNotExists("device:delete", "Delete devices"));
+                permissions.add(createPermissionIfNotExists("scenario:read", "View scenarios"));
+                permissions.add(createPermissionIfNotExists("scenario:write", "Create and update scenarios"));
+                permissions.add(createPermissionIfNotExists("scenario:delete", "Delete scenarios"));
+                permissions.add(createPermissionIfNotExists("subscription:read", "View subscriptions"));
+                permissions.add(createPermissionIfNotExists("subscription:write", "Create and update subscriptions"));
+                permissions.add(createPermissionIfNotExists("subscription:delete", "Delete subscriptions"));
                 return permissions;
         }
 
@@ -237,6 +258,16 @@ public class DataInitializer implements CommandLineRunner {
                                                                 .build()));
         }
 
+        private Role createOrUpdateRole(String name, String description, List<Permission> permissions) {
+                return roleRepository.findByName(name)
+                                .map(existing -> {
+                                        existing.setDescription(description);
+                                        existing.getPermissions().addAll(permissions);
+                                        return roleRepository.save(existing);
+                                })
+                                .orElseGet(() -> createRole(name, description, permissions));
+        }
+
         private Role createRole(String name, String description, List<Permission> permissions) {
                 return roleRepository.findByName(name)
                                 .orElseGet(() -> roleRepository.save(
@@ -248,6 +279,69 @@ public class DataInitializer implements CommandLineRunner {
                                                                                  // @CreatedDate
                                                                 .active(true)
                                                                 .build()));
+        }
+
+        private void seedGatewayClient() {
+                Client client = clientRepository.findByClientId("api-gateway").orElse(null);
+                boolean isNew = false;
+
+                if (client == null) {
+                        client = Client.builder()
+                                        .clientId("api-gateway")
+                                        .clientIdIssuedAt(Instant.now())
+                                        .build();
+                        isNew = true;
+                }
+
+                client.setClientName("API Gateway");
+                client.setClientSecret(passwordEncoder.encode(gatewayClientSecret));
+                client.setAuthenticationMethods(new HashSet<>(Set.of(
+                                new ClientAuthenticationMethod("client_secret_basic"))));
+                client.setAuthorizationGrantTypes(new HashSet<>(Set.of(
+                                new AuthorizationGrantType("authorization_code"),
+                                new AuthorizationGrantType("refresh_token"),
+                                new AuthorizationGrantType("client_credentials"))));
+                client.setRedirectUris(new HashSet<>(Set.of(
+                                "http://localhost:8080/login/oauth2/code/gateway")));
+                client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
+                client.setScopes(new HashSet<>(Set.of("openid", "profile")));
+                client.setRequireProofKey(false);
+
+                clientRepository.save(client);
+                log.info("{} gateway client: api-gateway", isNew ? "Created" : "Updated");
+        }
+
+        private void seedMainAppClient() {
+                Client client = clientRepository.findByClientId("main-app").orElse(null);
+                boolean isNew = false;
+
+                if (client == null) {
+                        client = Client.builder()
+                                        .clientId("main-app")
+                                        .clientIdIssuedAt(Instant.now())
+                                        .build();
+                        isNew = true;
+                }
+
+                client.setClientName("Main App");
+                client.setClientSecret(passwordEncoder.encode(mainAppClientSecret));
+                client.setAuthenticationMethods(new HashSet<>(Set.of(
+                                new ClientAuthenticationMethod("client_secret_basic"),
+                                new ClientAuthenticationMethod("none"))));
+                client.setAuthorizationGrantTypes(new HashSet<>(Set.of(
+                                new AuthorizationGrantType("authorization_code"),
+                                new AuthorizationGrantType("refresh_token"))));
+                client.setRedirectUris(new HashSet<>(Set.of(
+                                "http://localhost:4201",
+                                "http://localhost:4201/",
+                                "http://192.168.1.19:4201",
+                                "http://192.168.1.19:4201/")));
+                client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
+                client.setScopes(new HashSet<>(Set.of("openid", "profile", "offline_access")));
+                client.setRequireProofKey(true);
+
+                clientRepository.save(client);
+                log.info("{} main-app client: main-app", isNew ? "Created" : "Updated");
         }
 
         private void createUser(String username, String email, String password, String name, Role role) {
