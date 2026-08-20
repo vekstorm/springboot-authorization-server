@@ -22,6 +22,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
+import java.util.Set;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -32,15 +34,15 @@ public class AuthorizationServerSecurityConfig {
         @Value("${base.url}")
         private String baseUrl;
 
-        @Value("${server.port}")
-        private String port;
+        @Value("${frontend.allowed-origins}")
+        private Set<String> allowedOrigins;
 
         private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
         private final FormLoginSuccessHandler formLoginSuccessHandler;
 
         @Bean
         public DynamicLogoutSuccessHandler dynamicLogoutSuccessHandler() {
-                return new DynamicLogoutSuccessHandler();
+                return new DynamicLogoutSuccessHandler(allowedOrigins);
         }
 
         @Bean
@@ -76,7 +78,6 @@ public class AuthorizationServerSecurityConfig {
                                 .with(authorizationServerConfigurer,
                                                 (authorizationServer) -> authorizationServer
                                                                 .oidc(Customizer.withDefaults()))
-                                .cors(Customizer.withDefaults())
                                 .authorizeHttpRequests((authorize) -> authorize
                                                 .anyRequest().authenticated())
                                 .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
@@ -91,8 +92,7 @@ public class AuthorizationServerSecurityConfig {
                 http
                                 .securityMatcher("/api/v1/client/**", "/api/v1/user/**", "/api/v1/role/**",
                                                 "/api/v1/permission/**")
-                                .cors(Customizer.withDefaults())
-                                .authorizeHttpRequests(authorize -> authorize
+                                 .authorizeHttpRequests(authorize -> authorize
                                                 .anyRequest().authenticated())
                                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
                                                 jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
@@ -142,8 +142,7 @@ public class AuthorizationServerSecurityConfig {
 
         @Bean
         public AuthorizationServerSettings authorizationServerSettings() {
-                String oauthServerUrl = baseUrl + ":" + port;
-                return AuthorizationServerSettings.builder().issuer(oauthServerUrl).build();
+                return AuthorizationServerSettings.builder().issuer(baseUrl).build();
         }
 
 }

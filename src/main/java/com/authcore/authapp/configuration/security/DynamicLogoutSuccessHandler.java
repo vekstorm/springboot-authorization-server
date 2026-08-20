@@ -13,16 +13,13 @@ import java.util.Set;
 
 public class DynamicLogoutSuccessHandler implements LogoutSuccessHandler {
 
-    private static final Set<String> ALLOWED_ORIGINS = Set.of(
-            "http://localhost:4200",
-            "http://192.168.1.41:4200",
-            "http://localhost:4201",
-            "http://192.168.1.41:4201",
-            "http://localhost:8081",
-            "http://192.168.1.41:8081",
-            "https://miapp.com"); // TODO -> Whitelist administrable
+    private final Set<String> allowedOrigins;
 
     private static final String DEFAULT_TARGET = "/login?logout";
+
+    public DynamicLogoutSuccessHandler(Set<String> allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
+    }
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request,
@@ -44,7 +41,7 @@ public class DynamicLogoutSuccessHandler implements LogoutSuccessHandler {
             }
         }
 
-        String target = (origin != null && ALLOWED_ORIGINS.contains(origin))
+        String target = (origin != null && allowedOrigins.contains(origin))
                 ? origin + "/"
                 : DEFAULT_TARGET;
 

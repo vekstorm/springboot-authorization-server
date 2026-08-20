@@ -66,6 +66,15 @@ public class DataInitializer implements CommandLineRunner {
         @Value("${defaults.redirect-uri}")
         private String defaultRedirectUri;
 
+        @Value("${defaults.main-app-client-secret}")
+        private String mainAppClientSecret;
+
+        @Value("${frontend.main-url}")
+        private String mainAppUrl;
+
+        @Value("${frontend.identity-url}")
+        private String identityAppUrl;
+
         @Value("${defaults.client-credentials-grant-type}")
         private String clientCredentialsGrantType;
 
@@ -87,6 +96,7 @@ public class DataInitializer implements CommandLineRunner {
                 seedOidcClient();
                 seedSwaggerClient();
                 seedIdentityClient();
+                seedMainAppClient();
 
                 if (appUserRepository.findByEmail(adminEmail).isPresent()) {
                         log.info("Default users already exist. Skipping user initialization.");
@@ -190,14 +200,45 @@ public class DataInitializer implements CommandLineRunner {
                                 new AuthorizationGrantType("authorization_code"),
                                 new AuthorizationGrantType("refresh_token"))));
                 client.setRedirectUris(new HashSet<>(Set.of(
-                                "http://localhost:4200/",
-                                "http://192.168.1.41:4200/")));
+                                identityAppUrl,
+                                identityAppUrl + "/")));
                 client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
                 client.setScopes(new HashSet<>(Set.of("openid", "profile", "offline_access")));
                 client.setRequireProofKey(true);
 
                 clientRepository.save(client);
                 log.info("{} identity client: identity-client", isNew ? "Created" : "Updated");
+        }
+
+        private void seedMainAppClient() {
+                Client client = clientRepository.findByClientId("main-app").orElse(null);
+                boolean isNew = false;
+
+                if (client == null) {
+                        client = Client.builder()
+                                        .clientId("main-app")
+                                        .clientIdIssuedAt(Instant.now())
+                                        .build();
+                        isNew = true;
+                }
+
+                client.setClientName("Main App");
+                client.setClientSecret(passwordEncoder.encode(mainAppClientSecret));
+                client.setAuthenticationMethods(new HashSet<>(Set.of(
+                                new ClientAuthenticationMethod("client_secret_basic"),
+                                new ClientAuthenticationMethod("none"))));
+                client.setAuthorizationGrantTypes(new HashSet<>(Set.of(
+                                new AuthorizationGrantType(authorizationCodeGrantType),
+                                new AuthorizationGrantType(refreshTokenGrantType))));
+                client.setRedirectUris(new HashSet<>(Set.of(
+                                mainAppUrl,
+                                mainAppUrl + "/")));
+                client.setPostLogoutRedirectUris(new HashSet<>(Set.of()));
+                client.setScopes(new HashSet<>(Set.of("openid", "profile", "offline_access")));
+                client.setRequireProofKey(true);
+
+                clientRepository.save(client);
+                log.info("{} main-app client: main-app", isNew ? "Created" : "Updated");
         }
 
         private List<Permission> createPermissions() {

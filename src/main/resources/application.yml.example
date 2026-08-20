@@ -17,8 +17,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://<host>:5432/<db_name>?createDatabaseIfNotExist=true
-    username: admin
-    password: 1234
+    username: <db_user>
+    password: <db_password>
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -51,11 +51,11 @@ defaults:
   admin-role: ROLE_ADMIN
   user-role: ROLE_USER
   admin-email: admin@email.com
-  admin-password: admin123
+  admin-password: <admin_password>
   user-email: user@email.com
-  user-password: user123
+  user-password: <user_password>
   client-id: oidc-client
-  client-secret: secret
+  client-secret: <oidc_client_secret>
   client-name: OIDC Debugger
   client-scope: openid
   client-credentials-grant-type: client_credentials
